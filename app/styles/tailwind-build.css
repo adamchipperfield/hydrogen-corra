@@ -507,6 +507,9 @@ video {
   margin-left: auto;
   margin-right: auto;
 }
+.flex {
+  display: flex;
+}
 .grid {
   display: grid;
 }
@@ -519,9 +522,16 @@ video {
 .grid-rows-\[auto_1fr_auto\] {
   grid-template-rows: auto 1fr auto;
 }
+.gap-4 {
+  gap: 1rem;
+}
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
+}
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 .font-bold {
   font-weight: 700;
