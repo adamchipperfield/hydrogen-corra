@@ -8,6 +8,8 @@ import {
 } from '@remix-run/react'
 import tailwind from './styles/tailwind-build.css'
 import Layout from './components/Layout'
+import { json } from '@shopify/remix-oxygen'
+import { formatLinks } from './helpers/format'
 
 export const links = () => [
   {
@@ -22,11 +24,14 @@ export const meta = () => ({
 })
 
 export async function loader({ context }) {
-  return await context.storefront.query(SHOP_QUERY)
+  return json({
+    ...await context.storefront.query(SHOP_QUERY),
+    domain: context.storefront.getShopifyDomain()
+  })
 }
 
 export default function App() {
-  const { shop, menu } = useLoaderData()
+  const { shop, menu, domain } = useLoaderData()
 
   return (
     <html>
@@ -38,7 +43,7 @@ export default function App() {
       <body>
         <Layout
           title={shop.name}
-          links={menu.items}
+          links={formatLinks(menu.items, domain)}
         >
           <Outlet />
         </Layout>
