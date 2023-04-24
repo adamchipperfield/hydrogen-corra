@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  h1, .text-h1 {
+    @apply text-5xl leading-tight;
+  }
+
+  h2, .text-h2 {
+    @apply text-4xl leading-tight;
+  }
+
+  h3, .text-h3 {
+    @apply text-3xl leading-tight;
+  }
+
+  h4, .text-h4 {
+    @apply text-2xl leading-tight;
+  }
+
+  h5, .text-h5 {
+    @apply text-xl leading-tight;
+  }
+
+  h6, .text-h6 {
+    @apply text-lg leading-tight;
+  }
+}
