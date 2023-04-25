@@ -1,12 +1,12 @@
 /**
- * Formats Shopify links.
+ * Formats Shopify menu items.
  *
- * @param {Array} links - The links to format.
- * @param {String} domain - The store domain (to strip from the links).
- * @returns The formatted links.
+ * @param {Array} items - The items to format.
+ * @param {String} domain - The store domain (to strip from the items).
+ * @returns The formatted items.
  */
-export function formatLinks(links, domain) {
-  return links.map(({ url, ...rest }) => ({
+export function formatMenuItems(items, domain) {
+  return items.map(({ url, ...rest }) => ({
     url: url.replace(domain, ''),
     ...rest
   }))

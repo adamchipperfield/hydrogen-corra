@@ -2,7 +2,7 @@ import { useLoaderData } from '@remix-run/react'
 import ProductCard from '~/components/ProductCard'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { Collection, Product } from '@shopify/hydrogen/storefront-api-types'
-import { productFragment } from '~/helpers/fragments'
+import { productCardFragment } from '~/helpers/fragments'
 
 export async function loader({ params, context }: LoaderArgs) {
   const { collection } = await context.storefront.query<{ collection: Collection }>(
@@ -60,11 +60,11 @@ const COLLECTION_QUERY = `#graphql
       description
       products(first: 12) {
         nodes {
-          ...ProductFragment
+          ...ProductCardFragment
         }
       }
     }
   }
 
-  ${productFragment}
+  ${productCardFragment}
 `

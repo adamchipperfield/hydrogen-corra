@@ -1,5 +1,9 @@
-export const productFragment = `
-  fragment ProductFragment on Product {
+/**
+ * Product summary.
+ * @see https://shopify.dev/docs/api/storefront/2023-04/objects/Product
+ */
+export const productCardFragment = `
+  fragment ProductCardFragment on Product {
     id
     title
     handle
@@ -21,5 +25,15 @@ export const productFragment = `
       url
       altText
     }
+  }
+`
+
+/**
+ * Product details.
+ * @see https://shopify.dev/docs/api/storefront/2023-04/objects/Product
+ */
+export const productFragment = `
+  fragment ProductFragment on Product {
+    title
   }
 `

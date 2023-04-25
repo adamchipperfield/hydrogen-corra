@@ -9,7 +9,7 @@ import {
 import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
 import { LoaderArgs, json } from '@shopify/remix-oxygen'
-import { formatLinks } from '~/helpers/format'
+import { formatMenuItems } from '~/helpers/format'
 import { Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
 
 export const links = () => [
@@ -44,7 +44,7 @@ export default function App() {
       <body>
         <Layout
           title={shop.name}
-          links={formatLinks(menu.items, domain)}
+          links={formatMenuItems(menu.items, domain)}
         >
           <Outlet />
         </Layout>
