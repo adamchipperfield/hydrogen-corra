@@ -6,10 +6,11 @@ import {
   ScrollRestoration,
   useLoaderData
 } from '@remix-run/react'
-import tailwind from './styles/tailwind-build.css'
-import Layout from './components/Layout'
-import { json } from '@shopify/remix-oxygen'
-import { formatLinks } from './helpers/format'
+import tailwind from '~/styles/tailwind-build.css'
+import Layout from '~/components/Layout'
+import { LoaderArgs, json } from '@shopify/remix-oxygen'
+import { formatLinks } from '~/helpers/format'
+import { Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
 
 export const links = () => [
   {
@@ -23,15 +24,15 @@ export const meta = () => ({
   viewport: 'width=device-width,initial-scale=1'
 })
 
-export async function loader({ context }) {
+export async function loader({ context }: LoaderArgs) {
   return json({
-    ...await context.storefront.query(SHOP_QUERY),
+    ...await context.storefront.query<{ shop: Shop, menu: Menu }>(SHOP_QUERY),
     domain: context.storefront.getShopifyDomain()
   })
 }
 
 export default function App() {
-  const { shop, menu, domain } = useLoaderData()
+  const { shop, menu, domain } = useLoaderData<typeof loader>()
 
   return (
     <html>
