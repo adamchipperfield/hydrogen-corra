@@ -1,7 +1,8 @@
 import { Link } from '@remix-run/react'
 import { Image } from '@shopify/hydrogen'
+import { Collection } from '@shopify/hydrogen/storefront-api-types'
 
-export default function CollectionCard({ collection }) {
+export default function CollectionCard({ collection }: { collection: Collection }) {
   return (
     <Link to={`/collections/${collection.handle}`}>
       <div className="bg-slate-200 aspect-[1]">

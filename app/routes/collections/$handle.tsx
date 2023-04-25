@@ -1,8 +1,11 @@
 import { useLoaderData } from '@remix-run/react'
 import ProductCard from '../../components/ProductCard'
+import type { LoaderArgs } from '@shopify/remix-oxygen'
+import type { Collection, Product } from '@shopify/hydrogen/storefront-api-types'
+import { productFragment } from '~/helpers/fragments'
 
-export async function loader({ params, context }) {
-  const { collection } = await context.storefront.query(
+export async function loader({ params, context }: LoaderArgs) {
+  const { collection } = await context.storefront.query<{ collection: Collection }>(
     COLLECTION_QUERY,
     {
       variables: {
@@ -26,7 +29,7 @@ export async function loader({ params, context }) {
 }
 
 export default function Collection() {
-  const { collection } = useLoaderData()
+  const { collection } = useLoaderData<typeof loader>()
 
   return (
     <div className="container mx-auto px-6 py-6">
@@ -38,11 +41,11 @@ export default function Collection() {
         )}
       </div>
 
-      <div class="grid gap-4 gap-y-8 grid-cols-2 md:grid-cols-4">
-        {collection.products.nodes.map(({ id, ...rest }) => (
+      <div className="grid gap-4 gap-y-8 grid-cols-2 md:grid-cols-4">
+        {collection.products.nodes.map((product) => (
           <ProductCard
-            key={id}
-            product={{ id, ...rest }}
+            key={product.id}
+            product={product as Product}
           />
         ))}
       </div>
@@ -57,29 +60,11 @@ const COLLECTION_QUERY = `#graphql
       description
       products(first: 12) {
         nodes {
-          id
-          title
-          handle
-          priceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          compareAtPriceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          featuredImage {
-            width
-            height
-            url
-            altText
-          }
+          ...ProductFragment
         }
       }
     }
   }
+
+  ${productFragment}
 `

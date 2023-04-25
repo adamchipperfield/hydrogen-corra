@@ -1,17 +1,22 @@
 import { Link } from '@remix-run/react'
 import { Image, Money } from '@shopify/hydrogen'
+import type { Product } from '@shopify/hydrogen/storefront-api-types'
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product }: { product: Product }) {
   const price = product.priceRange.minVariantPrice
   const compare = product.compareAtPriceRange.minVariantPrice
   const isSale = compare.amount > price.amount
 
   return (
     <Link to={`/products/${product.handle}`}>
-      <Image
-        data={product.featuredImage}
-        alt={product.title}
-      />
+      <div className="bg-slate-200 aspect-[1]">
+        {product.featuredImage && (
+          <Image
+            data={product.featuredImage}
+            alt={product.title}
+          />
+        )}
+      </div>
 
       <h3 className="text-sm mt-4">{product.title}</h3>
 
@@ -20,7 +25,7 @@ export default function ProductCard({ product }) {
           data={price}
           withoutTrailingZeros
           as="span"
-          className={isSale && 'text-red-500'}
+          className={isSale ? 'text-red-500' : ''}
         />
 
         {isSale && (

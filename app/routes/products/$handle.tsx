@@ -1,6 +1,7 @@
 import { useLoaderData } from '@remix-run/react'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { Product } from '@shopify/hydrogen/storefront-api-types'
+import { productFragment } from '~/helpers/fragments'
 
 export async function loader({ params, context }: LoaderArgs) {
   const { product } = await context.storefront.query<{ product: Product }>(
@@ -39,7 +40,9 @@ export default function Product() {
 const PRODUCT_QUERY = `#graphql
   query ($handle: String!) {
     product(handle: $handle) {
-      title
+      ...ProductFragment
     }
   }
+
+  ${productFragment}
 `

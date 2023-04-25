@@ -1,4 +1,15 @@
-export default function Layout({ children, title, links }) {
+import { MenuItem } from "@shopify/hydrogen/storefront-api-types";
+import { ReactNode } from "react";
+
+export default function Layout({
+  children,
+  title,
+  links
+}: {
+  children: ReactNode
+  title: string
+  links: Array<MenuItem>
+}) {
   return (
     <div className="grid grid-cols-[100%] grid-rows-[auto_1fr_auto] min-h-screen">
       <header>
@@ -8,7 +19,7 @@ export default function Layout({ children, title, links }) {
           <ul className="flex gap-4">
             {links.map(({ title, url, id }) => (
               <li key={id}>
-                <a href={url}>{title}</a>
+                {url ? <a href={url}>{title}</a> : title}
               </li>
             ))}
           </ul>
