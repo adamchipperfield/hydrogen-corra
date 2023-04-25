@@ -60,6 +60,18 @@ const COLLECTION_QUERY = `#graphql
           id
           title
           handle
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          compareAtPriceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
           featuredImage {
             width
             height
