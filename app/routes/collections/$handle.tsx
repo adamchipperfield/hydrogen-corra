@@ -1,5 +1,5 @@
 import { useLoaderData } from '@remix-run/react'
-import ProductCard from '../../components/ProductCard'
+import ProductCard from '~/components/ProductCard'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { Collection, Product } from '@shopify/hydrogen/storefront-api-types'
 import { productFragment } from '~/helpers/fragments'
