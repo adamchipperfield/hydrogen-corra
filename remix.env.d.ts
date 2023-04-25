@@ -1,3 +1,7 @@
+/// <reference types="@remix-run/dev" />
+/// <reference types="@shopify/remix-oxygen" />
+/// <reference types="@shopify/oxygen-workers-types" />
+
 /**
  * Declare local additions to `AppLoadContext` to include the session utilities we injected in `server.ts`.
  */

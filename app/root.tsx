@@ -6,7 +6,7 @@ import {
   ScrollRestoration,
   useLoaderData
 } from '@remix-run/react'
-import tailwind from '~/styles/tailwind-build.css'
+import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
 import { LoaderArgs, json } from '@shopify/remix-oxygen'
 import { formatLinks } from '~/helpers/format'
@@ -15,7 +15,7 @@ import { Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
 export const links = () => [
   {
     rel: 'stylesheet',
-    href: tailwind
+    href: styles
   }
 ]
 

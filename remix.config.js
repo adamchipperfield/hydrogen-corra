@@ -2,6 +2,7 @@
  * Configuration for Remix.
  *
  * @see https://remix.run/docs/en/main
+ * @type {import('@remix-run/dev').AppConfig}
  */
 module.exports = {
   ignoredRouteFiles: ['**/.*'],
@@ -18,5 +19,9 @@ module.exports = {
   serverDependenciesToBundle: 'all',
   serverModuleFormat: 'esm',
   serverPlatform: 'neutral',
-  serverMinify: process.env.NODE_ENV === 'production'
+  serverMinify: process.env.NODE_ENV === 'production',
+
+  future: {
+    unstable_tailwind: true
+  }
 }
