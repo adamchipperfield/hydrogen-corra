@@ -2,6 +2,7 @@ import {
   Links,
   Meta,
   Outlet,
+  RouteMatch,
   Scripts,
   ScrollRestoration,
   useLoaderData
@@ -28,14 +29,26 @@ type CartResponse = {
   cart: Cart
 }
 
-export async function loader({ context }: LoaderArgs) {
-  const { shop, menu } = await context.storefront.query<{ shop: Shop, menu: Menu }>(SHOP_QUERY)
-  const cartId = await context.session.get('cart')
+export interface RootMatches extends RouteMatch {
+  data: {
+    shop: Shop
+    menu: Menu
+    cart: CartResponse['cart']
+    domain: string
+  }
+}
 
-  let cart: Promise<Cart> | undefined = undefined
+export async function loader({ context }: LoaderArgs) {
+  const { shop, menu } = await context.storefront.query<{
+    shop: RootMatches['data']['shop']
+    menu: RootMatches['data']['menu']
+  }>(SHOP_QUERY)
+
+  const cartId = await context.session.get('cart')
+  let cart: Promise<RootMatches['data']['cart']> | undefined = undefined
 
   if (cartId) {
-    cart = (async () => {
+    cart = (async (): Promise<RootMatches['data']['cart']> => {
       const { cart } = await context.storefront.query<CartResponse>(
         CART_QUERY,
         {
@@ -45,7 +58,7 @@ export async function loader({ context }: LoaderArgs) {
           cache: context.storefront.CacheNone()
         }
       )
-    
+
       return cart
     })()
   }
@@ -107,6 +120,15 @@ const CART_QUERY = `#graphql
     cart(id: $cartId) {
       id
       totalQuantity
+      lines(first: 100) {
+        nodes {
+          merchandise {
+            ... on ProductVariant {
+              title
+            }
+          }
+        }
+      }
     }
   }
 `

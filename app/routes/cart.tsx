@@ -3,6 +3,7 @@ import { Cart } from '@shopify/hydrogen/storefront-api-types'
 import { ActionArgs, json } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LoadingScreen from '~/components/LoadingScreen'
+import type { RootMatches } from '~/root'
 
 export async function action({ request, context }: ActionArgs) {
   const { session } = context
@@ -76,14 +77,22 @@ export async function action({ request, context }: ActionArgs) {
 }
 
 export default function Cart() {
-  const [root] = useMatches()
+  /* @ts-ignore */
+  const [root]: [RootMatches] = useMatches()
+
 
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Await resolve={root.data.cart}>
-        {() => (
+        {(cart) => (
           <div className="container mx-auto px-6">
             <h1 className="text-h2">Cart</h1>
+
+            <ul>
+              {cart.lines.nodes.map((line) => (
+                <li>{line.merchandise.title}</li>
+              ))}
+            </ul>
           </div>
         )}
       </Await>

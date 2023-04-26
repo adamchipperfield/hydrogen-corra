@@ -36,9 +36,9 @@ export default function Product() {
       <h1>{product.title}</h1>
 
       <Form action="/cart" method="post">
-        <input type="hidden" name="action" value="add_to_cart" />
-        <input type="hidden" name="merchandise" value={product.variants.nodes.at(0)?.id} />
-        <input type="number" name="quantity" value={JSON.stringify(2)} />
+        <input type="hidden" name="action" value="add_to_cart" readOnly />
+        <input type="hidden" name="merchandise" value={product.variants.nodes.at(0)?.id} readOnly />
+        <input type="number" name="quantity" value={JSON.stringify(2)} readOnly />
 
         <button>Add to cart</button>
       </Form>
