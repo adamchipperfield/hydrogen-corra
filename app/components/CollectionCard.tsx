@@ -1,6 +1,7 @@
 import { Link } from '@remix-run/react'
 import { Image } from '@shopify/hydrogen'
 import { Collection } from '@shopify/hydrogen/storefront-api-types'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 export default function CollectionCard({ collection }: { collection: Collection }) {
   return (
@@ -10,8 +11,9 @@ export default function CollectionCard({ collection }: { collection: Collection 
           <Image
             data={collection.image}
             alt={collection.title}
-            aspectRatio="1"
+            aspectRatio="1 / 1"
             className="object-cover"
+            sizes={`(min-width: ${defaultTheme.screens.sm}) 490px, 100vw`}
           />
         )}
       </div>

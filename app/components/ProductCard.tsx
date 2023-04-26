@@ -1,6 +1,7 @@
 import { Link } from '@remix-run/react'
 import { Image, Money } from '@shopify/hydrogen'
 import type { Product } from '@shopify/hydrogen/storefront-api-types'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 export default function ProductCard({ product }: { product: Product }) {
   const price = product.priceRange.minVariantPrice
@@ -14,6 +15,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <Image
             data={product.featuredImage}
             alt={product.title}
+            sizes={`(min-width: ${defaultTheme.screens.sm}) 360px, 50vw`}
           />
         )}
       </div>
