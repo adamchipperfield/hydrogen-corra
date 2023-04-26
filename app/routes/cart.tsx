@@ -12,10 +12,6 @@ export async function action({ request, context }: ActionArgs) {
    * Saves the cart to the session and commits it to the headers.
    */
   async function commitCart(payload: Cart) {
-    if (!payload) {
-      throw new Error('A cart payload is required to persist the cart')
-    }
-
     session.set('cart', payload.id)
     headers.set('Set-Cookie', await session.commit())
 
