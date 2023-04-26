@@ -122,9 +122,30 @@ const CART_QUERY = `#graphql
       totalQuantity
       lines(first: 100) {
         nodes {
+          id
+          cost {
+            subtotalAmount {
+              amount
+              currencyCode
+            }
+            totalAmount {
+              amount
+              currencyCode
+            }
+          }
           merchandise {
             ... on ProductVariant {
+              id
               title
+              image {
+                url
+                height
+                width
+                altText
+              }
+              product {
+                title
+              }
             }
           }
         }
