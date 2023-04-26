@@ -9,17 +9,20 @@ export async function action({ request, context }: ActionArgs) {
   const headers = new Headers()
 
   /**
-   * Commits the cart to the session memory.
+   * Saves the cart to the session and commits it to the headers.
    */
   async function commitCart(payload: Cart) {
-    if (!cart) {
+    if (!payload) {
       throw new Error('A cart payload is required to persist the cart')
     }
 
     session.set('cart', payload.id)
     headers.set('Set-Cookie', await session.commit())
 
-    return json({ cart: payload }, { headers })
+    return json(
+      { cart: payload },
+      { headers }
+    )
   }
 
   switch (action) {
