@@ -1,5 +1,8 @@
+import { Await, useMatches } from '@remix-run/react'
 import { Cart } from '@shopify/hydrogen/storefront-api-types'
 import { ActionArgs, json } from '@shopify/remix-oxygen'
+import { Suspense } from 'react'
+import LoadingScreen from '~/components/LoadingScreen'
 
 export async function action({ request, context }: ActionArgs) {
   const { session } = context
@@ -17,7 +20,10 @@ export async function action({ request, context }: ActionArgs) {
 
     return json(
       { cart: payload },
-      { headers }
+      {
+        headers,
+        status: 200
+      }
     )
   }
 
@@ -49,7 +55,7 @@ export async function action({ request, context }: ActionArgs) {
           }
         )
 
-        await commitCart(cartCreate.cart)
+        return await commitCart(cartCreate.cart)
       }
 
       const { cartLinesAdd } = await context.storefront.mutate<{ cartLinesAdd: { cart: Cart } }>(
@@ -62,11 +68,27 @@ export async function action({ request, context }: ActionArgs) {
         }
       )
 
-      await commitCart(cartLinesAdd.cart)
+      return await commitCart(cartLinesAdd.cart)
 
     default:
       throw new Error(`Cart action \`${action}\` does not exist`)
   }
+}
+
+export default function Cart() {
+  const [root] = useMatches()
+
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <Await resolve={root.data.cart}>
+        {() => (
+          <div className="container mx-auto px-6">
+            <h1 className="text-h2">Cart</h1>
+          </div>
+        )}
+      </Await>
+    </Suspense>
+  )
 }
 
 const CART_CREATE_MUTATION = `#graphql

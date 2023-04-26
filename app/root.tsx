@@ -8,9 +8,9 @@ import {
 } from '@remix-run/react'
 import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
-import { LoaderArgs, json } from '@shopify/remix-oxygen'
+import { LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
-import { Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
+import { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
 
 export const links = () => [
   {
@@ -24,9 +24,36 @@ export const meta = () => ({
   viewport: 'width=device-width,initial-scale=1'
 })
 
+type CartResponse = {
+  cart: Cart
+}
+
 export async function loader({ context }: LoaderArgs) {
-  return json({
-    ...await context.storefront.query<{ shop: Shop, menu: Menu }>(SHOP_QUERY),
+  const { shop, menu } = await context.storefront.query<{ shop: Shop, menu: Menu }>(SHOP_QUERY)
+  const cartId = await context.session.get('cart')
+
+  let cart: Promise<Cart> | undefined = undefined
+
+  if (cartId) {
+    cart = (async () => {
+      const { cart } = await context.storefront.query<CartResponse>(
+        CART_QUERY,
+        {
+          variables: {
+            cartId
+          },
+          cache: context.storefront.CacheNone()
+        }
+      )
+    
+      return cart
+    })()
+  }
+
+  return defer({
+    shop,
+    menu,
+    cart,
     domain: context.storefront.getShopifyDomain()
   })
 }
@@ -71,6 +98,15 @@ const SHOP_QUERY = `#graphql
         title
         url
       }
+    }
+  }
+`
+
+const CART_QUERY = `#graphql
+  query ($cartId: ID!) {
+    cart(id: $cartId) {
+      id
+      totalQuantity
     }
   }
 `

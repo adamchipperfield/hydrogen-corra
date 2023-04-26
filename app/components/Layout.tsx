@@ -1,5 +1,7 @@
-import { MenuItem } from "@shopify/hydrogen/storefront-api-types";
-import { ReactNode } from "react";
+import { Await, Link, useMatches } from '@remix-run/react'
+import { MenuItem } from '@shopify/hydrogen/storefront-api-types'
+import { ReactNode, Suspense } from 'react'
+import Loader from '~/components/Loader'
 
 export default function Layout({
   children,
@@ -10,6 +12,8 @@ export default function Layout({
   title: string
   links: Array<MenuItem>
 }) {
+  const [root] = useMatches()
+
   return (
     <div className="grid grid-cols-[100%] grid-rows-[auto_1fr_auto] min-h-screen">
       <header>
@@ -23,6 +27,16 @@ export default function Layout({
               </li>
             ))}
           </ul>
+
+          <Suspense fallback={<Loader width={16} />}>
+            <Await resolve={root.data.cart}>
+              {(cart) => (
+                <Link to="/cart">
+                  Cart ({cart.totalQuantity})
+                </Link>
+              )}
+            </Await>
+          </Suspense>
         </div>
       </header>
 
