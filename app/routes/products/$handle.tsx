@@ -46,13 +46,10 @@ export default function Product() {
           onChange={({ target }) => {
             setMerchandise(target.value)
           }}
+          defaultValue={merchandise}
         >
           {product.variants.nodes.map((variant) => (
-            <option
-              key={variant.id}
-              value={variant.id}
-              selected={variant.id === merchandise}
-            >
+            <option key={variant.id} value={variant.id}>
               {variant.title}
             </option>
           ))}
