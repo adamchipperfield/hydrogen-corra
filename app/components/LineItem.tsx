@@ -1,14 +1,19 @@
-import { useFetcher } from '@remix-run/react'
+import { Link, useFetcher } from '@remix-run/react'
 import { Image, Money } from '@shopify/hydrogen'
 import type { CartLine } from '@shopify/hydrogen/storefront-api-types'
 
 export default function LineItem({ item }: { item: CartLine }) {
   const { Form } = useFetcher()
   const isSale = item.cost.subtotalAmount.amount > item.cost.totalAmount.amount
+  const variantParameter = item.merchandise.id.split('/').at(-1)
+  const url = `/products/${item.merchandise.product.handle}?variant=${variantParameter}`
 
   return (
     <div className="grid grid-cols-[100px_auto] gap-4">
-      <div className="bg-slate-200 w-[100px] h-[100px]">
+      <Link
+        className="bg-slate-200 w-[100px] h-[100px]"
+        to={url}
+      >
         {item.merchandise.image && (
           <Image
             data={item.merchandise.image}
@@ -17,16 +22,16 @@ export default function LineItem({ item }: { item: CartLine }) {
             height={100}
           />
         )}
-      </div>
+      </Link>
 
-      <div className="flex flex-col py-3">
+      <div className="flex flex-col py-1">
         <div className="flex gap-3">
           <div>
-            <p className="text-sm">{item.merchandise.product.title}</p>
+            <Link to={url} className="text-sm">{item.merchandise.product.title}</Link>
             <p className="text-sm">{item.merchandise.title}</p>
           </div>
 
-          <p className="text-sm ml-auto">
+          <p className="text-sm ml-auto text-right">
             <Money
               data={item.cost.totalAmount}
               withoutTrailingZeros

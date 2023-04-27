@@ -1,4 +1,4 @@
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { useFetcher, useLoaderData, useSearchParams } from '@remix-run/react'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { Product } from '@shopify/hydrogen/storefront-api-types'
 import { productFragment } from '~/helpers/fragments'
@@ -28,11 +28,28 @@ export async function loader({ params, context }: LoaderArgs) {
   }
 }
 
-export default function Product() {
+/**
+ * Returns the default variant for the product.
+ * - If a query parameter exists, use that.
+ */
+function getDefaultVariantId(product: Product) {
+  const [params] = useSearchParams()
+  const fallback = product.variants.nodes.at(0)?.id
+  const variant = params.get('variant')
+
+  if (!variant) {
+    return fallback
+  }
+
+  return product.variants.nodes
+    .find(({ id }) => id.includes(variant))?.id ?? fallback
+}
+
+export default function ProductPage() {
   const { product } = useLoaderData<typeof loader>()
   const fetcher = useFetcher()
   const [quantity, setQuantity] = useState(1)
-  const [merchandise, setMerchandise] = useState(product.variants.nodes.at(0)?.id)
+  const [merchandise, setMerchandise] = useState(getDefaultVariantId(product))
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
 
   return (

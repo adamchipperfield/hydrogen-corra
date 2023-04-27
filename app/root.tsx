@@ -145,6 +145,7 @@ const CART_QUERY = `#graphql
               }
               product {
                 title
+                handle
               }
             }
           }

@@ -106,7 +106,7 @@ export default function Cart() {
             <h1 className="text-h2 mb-6">Cart</h1>
 
             <div className="md:grid md:grid-cols-2">
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-8">
                 {cart.lines.nodes.map((line) =>
                   <LineItem key={line.id} item={line} />
                 )}
