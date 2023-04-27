@@ -52,7 +52,7 @@ export default function LineItem({ item }: { item: CartLine }) {
           method="post"
         >
           <input type="hidden" name="action" value="remove_from_cart" readOnly />
-          <input type="hidden" name="line" value={item.id}  readOnly />
+          <input type="hidden" name="line" value={item.id} readOnly />
 
           <button className="text-sm">Remove</button>
         </Form>

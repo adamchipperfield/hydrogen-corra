@@ -2,6 +2,7 @@ import { useFetcher, useLoaderData } from '@remix-run/react'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { Product } from '@shopify/hydrogen/storefront-api-types'
 import { productFragment } from '~/helpers/fragments'
+import { useState } from 'react'
 
 export async function loader({ params, context }: LoaderArgs) {
   const { product } = await context.storefront.query<{ product: Product }>(
@@ -30,6 +31,8 @@ export async function loader({ params, context }: LoaderArgs) {
 export default function Product() {
   const { product } = useLoaderData<typeof loader>()
   const { Form } = useFetcher()
+  const [quantity, setQuantity] = useState(1)
+  const [merchandise, setMerchandise] = useState(product.variants.nodes.at(0)?.id)
 
   return (
     <div>
@@ -37,8 +40,32 @@ export default function Product() {
 
       <Form action="/cart" method="post">
         <input type="hidden" name="action" value="add_to_cart" readOnly />
-        <input type="hidden" name="merchandise" value={product.variants.nodes.at(0)?.id} readOnly />
-        <input type="number" name="quantity" value={JSON.stringify(1)} />
+
+        <select
+          name="merchandise"
+          onChange={({ target }) => {
+            setMerchandise(target.value)
+          }}
+        >
+          {product.variants.nodes.map((variant) => (
+            <option
+              key={variant.id}
+              value={variant.id}
+              selected={variant.id === merchandise}
+            >
+              {variant.title}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          name="quantity"
+          value={quantity}
+          onChange={({ target }) => {
+            setQuantity(Number(target.value))
+          }}
+        />
 
         <button>Add to cart</button>
       </Form>

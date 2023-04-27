@@ -35,7 +35,7 @@ export async function action({ request, context }: ActionArgs) {
     }
 
     const merchandise = form.get('merchandise')
-    const quantity = JSON.parse(form.get('quantity') as string) ?? 1
+    const quantity = Number(form.get('quantity')) ?? 1
 
     const lines = [
       {
@@ -108,7 +108,7 @@ export default function Cart() {
             <div className="md:grid md:grid-cols-2">
               <div className="flex flex-col gap-6">
                 {cart.lines.nodes.map((line) =>
-                  <LineItem item={line} />
+                  <LineItem key={line.id} item={line} />
                 )}
               </div>
             </div>

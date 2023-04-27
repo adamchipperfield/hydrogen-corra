@@ -38,6 +38,7 @@ export const productFragment = `
     variants(first: 100) {
       nodes {
         id
+        title
       }
     }
   }
