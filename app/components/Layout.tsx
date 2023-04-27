@@ -37,7 +37,7 @@ export default function Layout({
           </div>
 
           <div className="col-span-3 text-right">
-            <Suspense fallback={<Loader width={16} />}>
+            <Suspense fallback={<Loader height={19} width={64} />}>
               <Await resolve={root.data.cart}>
                 {(cart) => (
                   <Link to="/cart">

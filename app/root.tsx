@@ -105,7 +105,7 @@ const SHOP_QUERY = `#graphql
       }
     }
 
-    menu(handle: "main-menu") {
+    menu(handle: "hydrogen-menu") {
       items {
         id
         title

@@ -1,13 +1,17 @@
 export default function Loader({
-  height = 6,
-  width = 'full'
+  height = 20,
+  width = '100%'
 }: {
   height?: string | number
   width?: string | number
 }) {
   return (
     <div
-      className={`h-${height} w-${width} rounded bg-slate-200 animate-pulse inline-block`}
+      className={`rounded bg-slate-200 animate-pulse`}
+      style={{
+        height: typeof height === 'number' ? `${height}px` : height,
+        width: typeof height === 'number' ? `${width}px` : width
+      }}
     />
   )
 }
