@@ -35,6 +35,16 @@ export const productCardFragment = `
 export const productFragment = `
   fragment ProductFragment on Product {
     title
+    vendor
+    descriptionHtml
+    images(first: 100) {
+      nodes {
+        width
+        height
+        url
+        altText
+      }
+    }
     variants(first: 100) {
       nodes {
         id
