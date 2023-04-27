@@ -1,10 +1,11 @@
-import { useFetcher, useLoaderData, useSearchParams } from '@remix-run/react'
+import { useFetcher, useLoaderData, useMatches, useSearchParams } from '@remix-run/react'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { DisplayableError, Product } from '@shopify/hydrogen/storefront-api-types'
 import { productFragment } from '~/helpers/fragments'
 import { useState } from 'react'
 import { Image } from '@shopify/hydrogen'
 import DetailsTab from '~/components/DetailsTab'
+import type { RootMatches } from '~/root'
 
 export async function loader({ params, context }: LoaderArgs) {
   const { product } = await context.storefront.query<{ product: Product }>(
@@ -49,6 +50,9 @@ function getDefaultVariantId(product: Product) {
 
 export default function ProductPage() {
   const { product } = useLoaderData<typeof loader>()
+  /* @ts-ignore */
+  const [root]: [RootMatches] = useMatches()
+  const policies = [root.data.shop.refundPolicy, root.data.shop.shippingPolicy]
 
   return (
     <div className="container mx-auto px-6 flex flex-col items-start gap-6 md:grid md:grid-cols-[2fr_1fr]">
@@ -59,13 +63,21 @@ export default function ProductPage() {
       </div>
 
       <div className="sticky top-0 pt-6">
-        <ProductForm product={product} />
+        <ProductForm product={product as Product} />
 
-        {product.descriptionHtml && (
-          <DetailsTab title={'Description'}>
-            <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
-          </DetailsTab>
-        )}
+        <div className="mt-6">
+          {product.descriptionHtml && (
+            <DetailsTab title={'Description'}>
+              <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+            </DetailsTab>
+          )}
+
+          {policies.map((policy) => policy && (
+            <DetailsTab title={policy.title}>
+              {policy.body}
+            </DetailsTab>
+          ))}
+        </div>
       </div>
     </div>
   )

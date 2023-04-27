@@ -12,7 +12,7 @@ export default function DetailsTab({
   title: string
 }) {
   return (
-    <details className="group mb-4">
+    <details className="group border-t border-slate-500/20">
       <summary className="py-4 flex items-center font-medium cursor-pointer select-none">
         {title}
 
@@ -23,7 +23,9 @@ export default function DetailsTab({
         />
       </summary>
 
-      {children}
+      <div className="mb-6 text-sm">
+        {children}
+      </div>
     </details>
   )
 }

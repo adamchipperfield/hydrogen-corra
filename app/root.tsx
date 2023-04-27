@@ -103,6 +103,16 @@ const SHOP_QUERY = `#graphql
       primaryDomain {
         url
       }
+      refundPolicy {
+        body
+        title
+        url
+      }
+      shippingPolicy {
+        body
+        title
+        url
+      }
     }
 
     menu(handle: "hydrogen-menu") {
