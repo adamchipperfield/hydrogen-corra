@@ -30,15 +30,16 @@ export async function loader({ params, context }: LoaderArgs) {
 
 export default function Product() {
   const { product } = useLoaderData<typeof loader>()
-  const { Form } = useFetcher()
+  const fetcher = useFetcher()
   const [quantity, setQuantity] = useState(1)
   const [merchandise, setMerchandise] = useState(product.variants.nodes.at(0)?.id)
+  const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
 
   return (
     <div>
       <h1>{product.title}</h1>
 
-      <Form action="/cart" method="post">
+      <fetcher.Form action="/cart" method="post">
         <input type="hidden" name="action" value="add_to_cart" readOnly />
 
         <select
@@ -64,8 +65,8 @@ export default function Product() {
           }}
         />
 
-        <button>Add to cart</button>
-      </Form>
+        <button disabled={loading}>Add to cart</button>
+      </fetcher.Form>
     </div>
   )
 }
