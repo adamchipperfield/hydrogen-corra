@@ -120,7 +120,6 @@ export default function Cart() {
   /* @ts-ignore */
   const [root]: [RootMatches] = useMatches()
 
-
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Await resolve={root.data.cart}>

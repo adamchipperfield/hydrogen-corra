@@ -17,26 +17,36 @@ export default function Layout({
   return (
     <div className="grid grid-cols-[100%] grid-rows-[auto_1fr_auto] min-h-screen">
       <header>
-        <div className="container mx-auto px-6 py-6">
-          <a className="font-bold" href="/">{title}</a>
+        <div className="container mx-auto px-6 py-6 md:py-10 grid grid-cols-12 md:flex">
+          <div className="md:hidden col-span-3">
+            <button>Menu</button>
+          </div>
 
-          <ul className="flex gap-4">
-            {links.map(({ title, url, id }) => (
-              <li key={id}>
-                {url ? <a href={url}>{title}</a> : title}
-              </li>
-            ))}
-          </ul>
+          <div className="col-span-6 text-center">
+            <a className="font-bold" href="/">{title}</a>
+          </div>
 
-          <Suspense fallback={<Loader width={16} />}>
-            <Await resolve={root.data.cart}>
-              {(cart) => (
-                <Link to="/cart">
-                  Cart ({cart.totalQuantity})
-                </Link>
-              )}
-            </Await>
-          </Suspense>
+          <div className="hidden md:block grow ml-10">
+            <ul className="flex gap-6">
+              {links.map(({ title, url, id }) => (
+                <li key={id}>
+                  {url ? <a href={url}>{title}</a> : title}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="col-span-3 text-right">
+            <Suspense fallback={<Loader width={16} />}>
+              <Await resolve={root.data.cart}>
+                {(cart) => (
+                  <Link to="/cart">
+                    Cart ({cart.totalQuantity})
+                  </Link>
+                )}
+              </Await>
+            </Suspense>
+          </div>
         </div>
       </header>
 
