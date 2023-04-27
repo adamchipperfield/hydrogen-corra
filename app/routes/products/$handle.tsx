@@ -1,6 +1,6 @@
 import { useFetcher, useLoaderData, useSearchParams } from '@remix-run/react'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
-import type { Product } from '@shopify/hydrogen/storefront-api-types'
+import type { DisplayableError, Product } from '@shopify/hydrogen/storefront-api-types'
 import { productFragment } from '~/helpers/fragments'
 import { useState } from 'react'
 
@@ -51,10 +51,19 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [merchandise, setMerchandise] = useState(getDefaultVariantId(product))
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
+  const errors = fetcher.data?.errors as DisplayableError[] ?? []
 
   return (
     <div>
-      <h1>{product.title}</h1>
+      <h1 className="mb-4">{product.title}</h1>
+
+      {errors.length >= 1 && (
+        <ul className="flex flex-col gap-1 my-4">
+          {errors.map(({ message }) => (
+            <li className="text-red-500">{message}</li>
+          ))}
+        </ul>
+      )}
 
       <fetcher.Form action="/cart" method="post">
         <input type="hidden" name="action" value="add_to_cart" readOnly />

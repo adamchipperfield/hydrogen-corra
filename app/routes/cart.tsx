@@ -1,10 +1,16 @@
 import { Await, useMatches } from '@remix-run/react'
-import { Cart } from '@shopify/hydrogen/storefront-api-types'
+import type { Cart, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
 import { ActionArgs, json } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
+import { displayableErrorFragment } from '~/helpers/fragments'
 import type { RootMatches } from '~/root'
+
+type CartResponse = {
+  cart: Cart
+  userErrors: DisplayableError[]
+}
 
 export async function action({ request, context }: ActionArgs) {
   const { session } = context
@@ -16,12 +22,20 @@ export async function action({ request, context }: ActionArgs) {
   /**
    * Saves the cart to the session and commits it to the headers.
    */
-  async function commitCart(payload: Cart) {
-    session.set('cart', payload.id)
-    headers.set('Set-Cookie', await session.commit())
+  async function commitCart(
+    payload: CartResponse['cart'],
+    errors: CartResponse['userErrors']
+  ) {
+    if (payload) {
+      session.set('cart', payload.id)
+      headers.set('Set-Cookie', await session.commit())
+    }
 
     return json(
-      { cart: payload },
+      {
+        cart: payload,
+        errors
+      },
       {
         headers,
         status: 200
@@ -45,7 +59,7 @@ export async function action({ request, context }: ActionArgs) {
     ]
 
     if (!cart) {
-      const { cartCreate } = await context.storefront.mutate<{ cartCreate: { cart: Cart } }>(
+      const { cartCreate } = await context.storefront.mutate<{ cartCreate: CartResponse }>(
         CART_CREATE_MUTATION,
         {
           variables: {
@@ -56,10 +70,13 @@ export async function action({ request, context }: ActionArgs) {
         }
       )
 
-      return await commitCart(cartCreate.cart)
+      return await commitCart(
+        cartCreate.cart,
+        cartCreate.userErrors
+      )
     }
 
-    const { cartLinesAdd } = await context.storefront.mutate<{ cartLinesAdd: { cart: Cart } }>(
+    const { cartLinesAdd } = await context.storefront.mutate<{ cartLinesAdd: CartResponse }>(
       CART_LINES_ADD_MUTATION,
       {
         variables: {
@@ -69,7 +86,10 @@ export async function action({ request, context }: ActionArgs) {
       }
     )
 
-    return await commitCart(cartLinesAdd.cart)
+    return await commitCart(
+      cartLinesAdd.cart,
+      cartLinesAdd.userErrors
+    )
   }
 
   if (action === 'remove_from_cart') {
@@ -77,7 +97,7 @@ export async function action({ request, context }: ActionArgs) {
       throw new Error(`\`line\` is required`)
     }
 
-    const { cartLinesRemove } = await context.storefront.mutate<{ cartLinesRemove: { cart: Cart }}>(
+    const { cartLinesRemove } = await context.storefront.mutate<{ cartLinesRemove: CartResponse }>(
       CART_LINES_REMOVE_MUTATION,
       {
         variables: {
@@ -87,7 +107,10 @@ export async function action({ request, context }: ActionArgs) {
       }
     )
 
-    return await commitCart(cartLinesRemove.cart)
+    return await commitCart(
+      cartLinesRemove.cart,
+      cartLinesRemove.userErrors
+    )
   }
 
   throw new Error(`Cart action \`${action}\` does not exist`)
@@ -125,8 +148,14 @@ const CART_CREATE_MUTATION = `#graphql
       cart {
         id
       }
+
+      userErrors {
+        ...DisplayableErrorFragment
+      }
     }
   }
+
+  ${displayableErrorFragment}
 `
 
 const CART_LINES_ADD_MUTATION = `#graphql
@@ -135,8 +164,14 @@ const CART_LINES_ADD_MUTATION = `#graphql
       cart {
         id
       }
+
+      userErrors {
+        ...DisplayableErrorFragment
+      }
     }
   }
+
+  ${displayableErrorFragment}
 `
 
 const CART_LINES_REMOVE_MUTATION = `#graphql
@@ -145,6 +180,12 @@ const CART_LINES_REMOVE_MUTATION = `#graphql
       cart {
         id
       }
+
+      userErrors {
+        ...DisplayableErrorFragment
+      }
     }
   }
+
+  ${displayableErrorFragment}
 `

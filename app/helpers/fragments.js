@@ -43,3 +43,14 @@ export const productFragment = `
     }
   }
 `
+
+/**
+ * Represents an error in the input of a mutation.
+ * @see https://shopify.dev/docs/api/storefront/2023-04/interfaces/DisplayableError
+ */
+export const displayableErrorFragment = `
+  fragment DisplayableErrorFragment on DisplayableError {
+    message
+    field
+  }
+`
