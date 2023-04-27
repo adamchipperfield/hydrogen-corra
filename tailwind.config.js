@@ -1,10 +1,14 @@
 /** @type {import('tailwindcss').Config} */
+const { buttonClasses } = require('./app/helpers/classes')
+
 module.exports = {
   content: [
     './app/**/*.tsx'
   ],
   safelist: [
     { pattern: /h-*/ },
-    { pattern: /w-*/ }
+    { pattern: /w-*/ },
+
+    ...buttonClasses.split(' ')
   ]
 }

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Image } from '@shopify/hydrogen'
 import DetailsTab from '~/components/DetailsTab'
 import type { RootMatches } from '~/root'
+import { buttonClasses } from '~/helpers/classes'
 
 export async function loader({ params, context }: LoaderArgs) {
   const { product } = await context.storefront.query<{ product: Product }>(
@@ -62,7 +63,7 @@ export default function ProductPage() {
         ))}
       </div>
 
-      <div className="sticky top-0 pt-6">
+      <div className="w-full md:sticky md:top-0 pt-10 md:pl-6">
         <ProductForm product={product as Product} />
 
         <div className="mt-6">
@@ -135,7 +136,12 @@ function ProductForm({ product }: { product: Product }) {
           }}
         />
 
-        <button disabled={loading}>Add to cart</button>
+        <button
+          className={buttonClasses}
+          disabled={loading}
+        >
+          Add to cart
+        </button>
       </div>
     </fetcher.Form>
   )
