@@ -75,7 +75,7 @@ export default function App() {
   const { shop, menu, domain } = useLoaderData<typeof loader>()
 
   return (
-    <html>
+    <html lang="EN">
       <head>
         <Meta />
         <Links />
