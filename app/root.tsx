@@ -12,6 +12,8 @@ import Layout from '~/components/Layout'
 import { LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
 import { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
+import { createCart } from './routes/cart'
+import { cartFragment } from './helpers/fragments'
 
 export const links = () => [
   {
@@ -47,8 +49,15 @@ export async function loader({ context }: LoaderArgs) {
   const cartId = await context.session.get('cart')
   let cart: Promise<RootMatches['data']['cart']> | undefined = undefined
 
-  if (cartId) {
     cart = (async (): Promise<RootMatches['data']['cart']> => {
+      if (!cartId) {
+        const { cartCreate } = await createCart(context.storefront)
+
+        if (cartCreate) {
+          return cartCreate.cart
+        }
+      }
+
       const { cart } = await context.storefront.query<CartResponse>(
         CART_QUERY,
         {
@@ -61,7 +70,6 @@ export async function loader({ context }: LoaderArgs) {
 
       return cart
     })()
-  }
 
   return defer({
     shop,
@@ -128,39 +136,9 @@ const SHOP_QUERY = `#graphql
 const CART_QUERY = `#graphql
   query ($cartId: ID!) {
     cart(id: $cartId) {
-      id
-      totalQuantity
-      lines(first: 100) {
-        nodes {
-          id
-          cost {
-            subtotalAmount {
-              amount
-              currencyCode
-            }
-            totalAmount {
-              amount
-              currencyCode
-            }
-          }
-          merchandise {
-            ... on ProductVariant {
-              id
-              title
-              image {
-                url
-                height
-                width
-                altText
-              }
-              product {
-                title
-                handle
-              }
-            }
-          }
-        }
-      }
+      ...CartFragment
     }
   }
+
+  ${cartFragment}
 `

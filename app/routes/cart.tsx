@@ -1,15 +1,34 @@
 import { Await, useMatches } from '@remix-run/react'
-import type { Cart, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
+import type { Cart, CartLineInput, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
 import { ActionArgs, json } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
-import { displayableErrorFragment } from '~/helpers/fragments'
+import { cartFragment, displayableErrorFragment } from '~/helpers/fragments'
 import type { RootMatches } from '~/root'
 
 type CartResponse = {
   cart: Cart
   userErrors: DisplayableError[]
+}
+
+/**
+ * Creates a new cart.
+ */
+export async function createCart(
+  storefront: ActionArgs['context']['storefront'],
+  lines: CartLineInput[] = []
+): Promise<{ cartCreate: CartResponse }> {
+  return await storefront.mutate<{ cartCreate: CartResponse }>(
+    CART_CREATE_MUTATION,
+    {
+      variables: {
+        input: {
+          lines
+        }
+      }
+    }
+  )
 }
 
 export async function action({ request, context }: ActionArgs) {
@@ -56,40 +75,46 @@ export async function action({ request, context }: ActionArgs) {
         merchandiseId: merchandise,
         quantity
       }
-    ]
+    ] as CartLineInput[]
 
     if (!cart) {
-      const { cartCreate } = await context.storefront.mutate<{ cartCreate: CartResponse }>(
-        CART_CREATE_MUTATION,
-        {
-          variables: {
-            input: {
-              lines
-            }
-          }
-        }
-      )
 
-      return await commitCart(
+      /**
+       * If no cart exists in the session, create one with the lines.
+       */
+      const { cartCreate } = await createCart(context.storefront, lines)
+
+      return commitCart(
         cartCreate.cart,
         cartCreate.userErrors
       )
     }
 
-    const { cartLinesAdd } = await context.storefront.mutate<{ cartLinesAdd: CartResponse }>(
-      CART_LINES_ADD_MUTATION,
-      {
-        variables: {
-          cartId: cart,
-          lines
+    try {
+      const { cartLinesAdd } = await context.storefront.mutate<{ cartLinesAdd: CartResponse }>(
+        CART_LINES_ADD_MUTATION,
+        {
+          variables: {
+            cartId: cart,
+            lines
+          }
         }
-      }
-    )
+      )
 
-    return await commitCart(
-      cartLinesAdd.cart,
-      cartLinesAdd.userErrors
-    )
+      return await commitCart(
+        cartLinesAdd.cart,
+        cartLinesAdd.userErrors
+      )
+    } catch (error) {
+
+      /**
+       * Handles when the cart line add mutation fails with a generic message.
+       * - This usually means the `cartId` variable is invalid.
+       */
+      return json({
+        errors: [{ message: 'Something went wrong, please try again.' }]
+      })
+    }
   }
 
   if (action === 'remove_from_cart') {
@@ -145,7 +170,7 @@ const CART_CREATE_MUTATION = `#graphql
   mutation ($input: CartInput!) {
     cartCreate(input: $input) {
       cart {
-        id
+        ...CartFragment
       }
 
       userErrors {
@@ -155,13 +180,14 @@ const CART_CREATE_MUTATION = `#graphql
   }
 
   ${displayableErrorFragment}
+  ${cartFragment}
 `
 
 const CART_LINES_ADD_MUTATION = `#graphql
   mutation ($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
-        id
+        ...CartFragment
       }
 
       userErrors {
@@ -171,13 +197,14 @@ const CART_LINES_ADD_MUTATION = `#graphql
   }
 
   ${displayableErrorFragment}
+  ${cartFragment}
 `
 
 const CART_LINES_REMOVE_MUTATION = `#graphql
   mutation ($cartId: ID!, $lineIds: [ID!]!) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart {
-        id
+        ...CartFragment
       }
 
       userErrors {
@@ -187,4 +214,5 @@ const CART_LINES_REMOVE_MUTATION = `#graphql
   }
 
   ${displayableErrorFragment}
+  ${cartFragment}
 `

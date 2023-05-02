@@ -64,3 +64,45 @@ export const displayableErrorFragment = `
     field
   }
 `
+
+/**
+ * Cart object.
+ * @see https://shopify.dev/docs/api/storefront/2023-04/objects/Cart
+ */
+export const cartFragment = `
+  fragment CartFragment on Cart {
+    id
+    totalQuantity
+    lines(first: 100) {
+      nodes {
+        id
+        cost {
+          subtotalAmount {
+            amount
+            currencyCode
+          }
+          totalAmount {
+            amount
+            currencyCode
+          }
+        }
+        merchandise {
+          ... on ProductVariant {
+            id
+            title
+            image {
+              url
+              height
+              width
+              altText
+            }
+            product {
+              title
+              handle
+            }
+          }
+        }
+      }
+    }
+  }
+`
