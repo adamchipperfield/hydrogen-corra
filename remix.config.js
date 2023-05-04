@@ -13,6 +13,7 @@ module.exports = {
    * The following settings are required to deploy to Oxygen.
    */
   assetsBuildDirectory: 'dist/client/build',
+  publicPath: (process.env.HYDROGEN_ASSET_BASE_URL ?? '/') + 'build/',
   serverBuildPath: 'dist/worker/index.js',
   serverMainFields: ['browser', 'module', 'main'],
   serverConditions: ['worker', process.env.NODE_ENV],
