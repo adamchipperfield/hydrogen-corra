@@ -1,11 +1,13 @@
 import {
+  Link,
   Links,
   Meta,
   Outlet,
   RouteMatch,
   Scripts,
   ScrollRestoration,
-  useLoaderData
+  useLoaderData,
+  useMatches
 } from '@remix-run/react'
 import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
@@ -14,6 +16,8 @@ import { formatMenuItems } from '~/helpers/format'
 import { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
 import { createCart } from './routes/cart'
 import { cartFragment } from './helpers/fragments'
+import type { ReactNode } from 'react'
+import { buttonClasses } from './helpers/classes'
 
 export const links = () => [
   {
@@ -40,7 +44,7 @@ export interface RootMatches extends RouteMatch {
   data: {
     shop: Shop
     menu: Menu
-    cart: CartResponse['cart']
+    cart?: CartResponse['cart']
     domain: string
   }
 }
@@ -93,9 +97,20 @@ export async function loader({ context }: LoaderArgs) {
   })
 }
 
-export default function App() {
-  const { shop, menu, domain } = useLoaderData<typeof loader>()
-
+/**
+ * The root wrapper, for consistent rendering.
+ */
+function Wrapper({
+  shop,
+  menu,
+  domain,
+  children
+}: {
+  shop: Shop
+  menu: Menu
+  domain: string
+  children: ReactNode
+}) {
   return (
     <html lang="EN">
       <head>
@@ -108,14 +123,60 @@ export default function App() {
           title={shop.name}
           links={formatMenuItems(menu.items, domain)}
         >
-          <Outlet />
+          {children}
         </Layout>
 
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
-  );
+  )
+}
+
+/**
+ * The root app layout.
+ */
+export default function App() {
+  const { shop, menu, domain } = useLoaderData<typeof loader>()
+
+  return (
+    <Wrapper
+      shop={shop}
+      menu={menu}
+      domain={domain}
+    >
+      <Outlet />
+    </Wrapper>
+  )
+}
+
+/**
+ * The error layout.
+ */
+export function CatchBoundary() {
+  /* @ts-ignore */
+  const [root]: [RootMatches] = useMatches()
+
+  return (
+    <Wrapper {...root.data}>
+      <div className="container px-6 mx-auto">
+        <div className="flex flex-col items-start gap-6 max-w-lg mt-16">
+          <h1 className="text-h3">Page not found</h1>
+
+          <p>
+            We couldn't find the page you're looking for. Try checking the path or heading back to the home page.
+          </p>
+          
+          <Link
+            className={`${buttonClasses} !w-auto mt-4`}
+            to="/"
+          >
+            Go to the home page
+          </Link>
+        </div>
+      </div>
+    </Wrapper>
+  )
 }
 
 const SHOP_QUERY = `#graphql
