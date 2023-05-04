@@ -31,6 +31,11 @@ type CartResponse = {
   cart: Cart
 }
 
+type ShopResponse = {
+  shop: RootMatches['data']['shop']
+  menu: RootMatches['data']['menu']
+}
+
 export interface RootMatches extends RouteMatch {
   data: {
     shop: Shop
@@ -41,43 +46,44 @@ export interface RootMatches extends RouteMatch {
 }
 
 export async function loader({ context }: LoaderArgs) {
-  const { shop, menu } = await context.storefront.query<{
-    shop: RootMatches['data']['shop']
-    menu: RootMatches['data']['menu']
-  }>(SHOP_QUERY)
-
+  const { shop, menu } = await context.storefront.query<ShopResponse>(SHOP_QUERY)
   const cartId = await context.session.get('cart')
-  let cart: Promise<RootMatches['data']['cart']> | undefined = undefined
 
-    cart = (async (): Promise<RootMatches['data']['cart']> => {
-      if (!cartId) {
-        const { cartCreate } = await createCart(context.storefront)
+  /**
+   * Handles the cart query.
+   * - If no cart is saved, create a new one.
+   * - If a cart is saved, query and return it.
+   * - If the cart query fails, create a new one.
+   */
+  const cart = (async (): Promise<RootMatches['data']['cart']> => {
+    if (!cartId) {
+      const { cartCreate } = await createCart(context.storefront)
 
-        if (cartCreate) {
-          return cartCreate.cart
-        }
+      if (cartCreate) {
+        return cartCreate.cart
       }
+    }
 
-      const { cart } = await context.storefront.query<CartResponse>(
-        CART_QUERY,
-        {
-          variables: {
-            cartId
-          },
-          cache: context.storefront.CacheNone()
-        }
-      )
-
-      if (!cart) {
-        const { cartCreate } = await createCart(context.storefront)
-
-        if (cartCreate) {
-          return cartCreate.cart
-        }
+    const { cart } = await context.storefront.query<CartResponse>(
+      CART_QUERY,
+      {
+        variables: {
+          cartId
+        },
+        cache: context.storefront.CacheNone()
       }
+    )
 
-      return cart
-    })()
+    if (!cart) {
+      const { cartCreate } = await createCart(context.storefront)
+
+      if (cartCreate) {
+        return cartCreate.cart
+      }
+    }
+
+    return cart
+  })()
 
   return defer({
     shop,
