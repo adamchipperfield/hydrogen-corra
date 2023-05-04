@@ -68,6 +68,14 @@ export async function loader({ context }: LoaderArgs) {
         }
       )
 
+      if (!cart) {
+        const { cartCreate } = await createCart(context.storefront)
+
+        if (cartCreate) {
+          return cartCreate.cart
+        }
+      }
+
       return cart
     })()
 
@@ -123,7 +131,7 @@ const SHOP_QUERY = `#graphql
       }
     }
 
-    menu(handle: "hydrogen-menu") {
+    menu(handle: "main-menu") {
       items {
         id
         title
