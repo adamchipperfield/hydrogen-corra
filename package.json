@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "dev": "shopify hydrogen dev"
+    "dev": "shopify hydrogen dev",
+    "build": "shopify hydrogen build"
   },
   "dependencies": {
     "@remix-run/react": "1.14.0",
