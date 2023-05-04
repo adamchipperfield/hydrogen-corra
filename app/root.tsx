@@ -11,13 +11,14 @@ import {
 } from '@remix-run/react'
 import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
-import { LoaderArgs, defer } from '@shopify/remix-oxygen'
+import { type LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
-import { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
-import { createCart } from './routes/cart'
-import { cartFragment } from './helpers/fragments'
+import type { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
+import { createCart } from '~/routes/cart'
+import { cartFragment } from '~/helpers/fragments'
 import type { ReactNode } from 'react'
-import { buttonClasses } from './helpers/classes'
+import { buttonClasses } from '~/helpers/classes'
+import type { CartResponse } from '~/routes/cart'
 
 export const links = () => [
   {
@@ -31,26 +32,24 @@ export const meta = () => ({
   viewport: 'width=device-width,initial-scale=1'
 })
 
-type CartResponse = {
-  cart: Cart
-}
-
-type ShopResponse = {
-  shop: RootMatches['data']['shop']
-  menu: RootMatches['data']['menu']
-}
-
-export interface RootMatches extends RouteMatch {
+/**
+ * Typing for the root route match.
+ * @see https://remix.run/docs/en/main/hooks/use-matches
+ */
+export interface RootMatch extends RouteMatch {
   data: {
     shop: Shop
     menu: Menu
-    cart?: CartResponse['cart']
+    cart: Cart
     domain: string
   }
 }
 
 export async function loader({ context }: LoaderArgs) {
-  const { shop, menu } = await context.storefront.query<ShopResponse>(SHOP_QUERY)
+  const { shop, menu } = await context.storefront.query<{
+    shop: Shop
+    menu: Menu
+  }>(GLOBAL_QUERY)
   const cartId = await context.session.get('cart')
 
   /**
@@ -59,7 +58,7 @@ export async function loader({ context }: LoaderArgs) {
    * - If a cart is saved, query and return it.
    * - If the cart query fails, create a new one.
    */
-  const cart = (async (): Promise<RootMatches['data']['cart']> => {
+  const cart = (async (): Promise<Cart> => {
     if (!cartId) {
       const { cartCreate } = await createCart(context.storefront)
 
@@ -179,7 +178,7 @@ export function CatchBoundary() {
   )
 }
 
-const SHOP_QUERY = `#graphql
+const GLOBAL_QUERY = `#graphql
   query {
     shop {
       name

@@ -1,6 +1,6 @@
 import { useLoaderData } from '@remix-run/react'
 import CollectionCard from '~/components/CollectionCard'
-import { LoaderArgs } from '@shopify/remix-oxygen'
+import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { Collection } from '@shopify/hydrogen/storefront-api-types'
 
 export async function loader({ context }: LoaderArgs) {

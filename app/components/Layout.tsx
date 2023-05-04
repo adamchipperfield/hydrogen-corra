@@ -1,6 +1,6 @@
 import { Await, Link, useMatches } from '@remix-run/react'
-import { MenuItem } from '@shopify/hydrogen/storefront-api-types'
-import { ReactNode, Suspense } from 'react'
+import type { MenuItem } from '@shopify/hydrogen/storefront-api-types'
+import { type ReactNode, Suspense } from 'react'
 import Loader from '~/components/Loader'
 
 export default function Layout({

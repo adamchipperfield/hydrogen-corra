@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react'
 import { Image } from '@shopify/hydrogen'
-import { Collection } from '@shopify/hydrogen/storefront-api-types'
+import type { Collection } from '@shopify/hydrogen/storefront-api-types'
 import defaultTheme from 'tailwindcss/defaultTheme'
 
 export default function CollectionCard({ collection }: { collection: Collection }) {

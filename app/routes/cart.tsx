@@ -1,13 +1,13 @@
 import { Await, useMatches } from '@remix-run/react'
 import type { Cart, CartLineInput, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
-import { ActionArgs, json } from '@shopify/remix-oxygen'
+import { type ActionArgs, json } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
 import { cartFragment, displayableErrorFragment } from '~/helpers/fragments'
-import type { RootMatches } from '~/root'
+import type { RootMatch } from '~/root'
 
-type CartResponse = {
+export type CartResponse = {
   cart: Cart
   userErrors: DisplayableError[]
 }
@@ -41,19 +41,16 @@ export async function action({ request, context }: ActionArgs) {
   /**
    * Saves the cart to the session and commits it to the headers.
    */
-  async function commitCart(
-    payload: CartResponse['cart'],
-    errors: CartResponse['userErrors']
-  ) {
-    if (payload) {
-      session.set('cart', payload.id)
+  async function commitCart({ cart, userErrors }: CartResponse) {
+    if (cart) {
+      session.set('cart', cart.id)
       headers.set('Set-Cookie', await session.commit())
     }
 
     return json(
       {
-        cart: payload,
-        errors
+        cart,
+        errors: userErrors
       },
       {
         headers,
@@ -82,12 +79,8 @@ export async function action({ request, context }: ActionArgs) {
       /**
        * If no cart exists in the session, create one with the lines.
        */
-      const { cartCreate } = await createCart(context.storefront, lines)
-
-      return commitCart(
-        cartCreate.cart,
-        cartCreate.userErrors
-      )
+      return await createCart(context.storefront, lines)
+        .then(({ cartCreate }) => commitCart(cartCreate))
     }
 
     try {
@@ -101,10 +94,7 @@ export async function action({ request, context }: ActionArgs) {
         }
       )
 
-      return await commitCart(
-        cartLinesAdd.cart,
-        cartLinesAdd.userErrors
-      )
+      return await commitCart(cartLinesAdd)
     } catch (error) {
 
       /**
@@ -132,10 +122,7 @@ export async function action({ request, context }: ActionArgs) {
       }
     )
 
-    return await commitCart(
-      cartLinesRemove.cart,
-      cartLinesRemove.userErrors
-    )
+    return commitCart(cartLinesRemove)
   }
 
   throw new Error(`Cart action \`${action}\` does not exist`)
@@ -143,7 +130,7 @@ export async function action({ request, context }: ActionArgs) {
 
 export default function Cart() {
   /* @ts-ignore */
-  const [root]: [RootMatches] = useMatches()
+  const [root]: [RootMatch] = useMatches()
 
   return (
     <Suspense fallback={<LoadingScreen />}>

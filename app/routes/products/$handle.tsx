@@ -5,7 +5,7 @@ import { productFragment } from '~/helpers/fragments'
 import { useState } from 'react'
 import { Image } from '@shopify/hydrogen'
 import DetailsTab from '~/components/DetailsTab'
-import type { RootMatches } from '~/root'
+import type { RootMatch } from '~/root'
 import { buttonClasses } from '~/helpers/classes'
 
 export async function loader({ params, context }: LoaderArgs) {
@@ -52,7 +52,7 @@ function getDefaultVariantId(product: Product) {
 export default function ProductPage() {
   const { product } = useLoaderData<typeof loader>()
   /* @ts-ignore */
-  const [root]: [RootMatches] = useMatches()
+  const [root]: [RootMatch] = useMatches()
   const policies = [root.data.shop.refundPolicy, root.data.shop.shippingPolicy]
 
   return (
