@@ -5,10 +5,15 @@ module.exports = {
   content: [
     './app/**/*.tsx'
   ],
+
   safelist: [
     { pattern: /h-*/ },
     { pattern: /w-*/ },
 
     ...buttonClasses.split(' ')
+  ],
+
+  plugins: [
+    require('@tailwindcss/typography')
   ]
 }
