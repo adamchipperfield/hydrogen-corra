@@ -6,6 +6,8 @@ import { productCardFragment } from '~/helpers/fragments'
 import { useEffect, useState } from 'react'
 import { buttonClasses } from '~/helpers/classes'
 
+export const productsPerPage = 8
+
 export async function loader({ params, context, request }: LoaderArgs) {
   const { searchParams } = new URL(request.url)
   const cursor = searchParams.get('cursor')
@@ -15,7 +17,8 @@ export async function loader({ params, context, request }: LoaderArgs) {
     {
       variables: {
         handle: params.handle,
-        after: cursor
+        after: cursor,
+        first: productsPerPage
       }
     }
   )
@@ -108,11 +111,11 @@ export default function Collection() {
 }
 
 const COLLECTION_QUERY = `#graphql
-  query ($handle: String!, $after: String) {
+  query ($handle: String!, $first: Int = 8, $after: String) {
     collection(handle: $handle) {
       title
       description
-      products(first: 4, after: $after) {
+      products(first: $first, after: $after) {
         nodes {
           ...ProductCardFragment
         }
