@@ -37,6 +37,11 @@ export const productFragment = `
     title
     vendor
     descriptionHtml
+    isGiftCard
+    options (first: 3) {
+      name
+      values
+    }
     images(first: 100) {
       nodes {
         width
@@ -49,6 +54,14 @@ export const productFragment = `
       nodes {
         id
         title
+        price {
+          amount
+          currencyCode
+        }
+        compareAtPrice {
+          amount
+          currencyCode
+        }
       }
     }
   }

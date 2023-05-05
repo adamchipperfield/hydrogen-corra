@@ -2,8 +2,8 @@ import { useFetcher, useLoaderData, useMatches, useSearchParams } from '@remix-r
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { DisplayableError, Product } from '@shopify/hydrogen/storefront-api-types'
 import { productFragment } from '~/helpers/fragments'
-import { useState } from 'react'
-import { Image } from '@shopify/hydrogen'
+import { useEffect, useState } from 'react'
+import { Image, Money } from '@shopify/hydrogen'
 import DetailsTab from '~/components/DetailsTab'
 import type { RootMatch } from '~/root'
 import { buttonClasses } from '~/helpers/classes'
@@ -49,6 +49,13 @@ function getDefaultVariantId(product: Product) {
     .find(({ id }) => id.includes(variant))?.id ?? fallback
 }
 
+/**
+ * Returns the variant object of a product by its identifier.
+ */
+function getVariantById(product: Product, variant?: String) {
+  return product.variants.nodes.find(({ id }) => id === variant)
+}
+
 export default function ProductPage() {
   const { product } = useLoaderData<typeof loader>()
   /* @ts-ignore */
@@ -91,8 +98,20 @@ function ProductForm({ product }: { product: Product }) {
   const fetcher = useFetcher()
   const [quantity, setQuantity] = useState(1)
   const [merchandise, setMerchandise] = useState(getDefaultVariantId(product))
+  const [selectedVariant, setSelectedVariant] = useState(getVariantById(product, merchandise))
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
   const errors = fetcher.data?.errors as DisplayableError[] ?? []
+  const hasOnlyDefaultVariant = product.options.length === 1 && product.options[0].values.length <= 1
+
+  useEffect(() => {
+    if (merchandise === selectedVariant?.id) {
+      return
+    }
+
+    setSelectedVariant(
+      getVariantById(product, merchandise)
+    )
+  }, [merchandise])
 
   return (
     <fetcher.Form action="/cart" method="post">
@@ -104,6 +123,12 @@ function ProductForm({ product }: { product: Product }) {
         <p className="text-sm -mt-2 mb-4 text-slate-500">{product.vendor}</p>
       )}
 
+      {!product.isGiftCard && selectedVariant && (
+        <div className="mb-4">
+          <Money data={selectedVariant.price} />
+        </div>
+      )}
+
       {errors.length >= 1 && (
         <ul className="flex flex-col gap-1 my-4">
           {errors.map(({ message }) => (
@@ -113,19 +138,26 @@ function ProductForm({ product }: { product: Product }) {
       )}
 
       <div className="flex flex-col items-start gap-4">
-        <select
-          name="merchandise"
-          onChange={({ target }) => {
-            setMerchandise(target.value)
-          }}
-          defaultValue={merchandise}
-        >
-          {product.variants.nodes.map((variant) => (
-            <option key={variant.id} value={variant.id}>
-              {variant.title}
-            </option>
-          ))}
-        </select>
+        <div className={`flex flex-col gap-2 ${hasOnlyDefaultVariant ? 'hidden' : ''}`}>
+          <label htmlFor={`product-variant-${product.id}`}>
+            Select variant
+          </label>
+
+          <select
+            id={`product-variant-${product.id}`}
+            name="merchandise"
+            onChange={({ target }) => {
+              setMerchandise(target.value)
+            }}
+            defaultValue={merchandise}
+          >
+            {product.variants.nodes.map((variant) => (
+              <option key={variant.id} value={variant.id}>
+                {variant.title}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <input
           type="number"
