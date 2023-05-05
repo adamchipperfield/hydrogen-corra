@@ -1,9 +1,11 @@
 import { Await, useMatches } from '@remix-run/react'
+import { Money } from '@shopify/hydrogen'
 import type { Cart, CartLineInput, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
 import { type ActionArgs, json } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
+import { buttonClasses } from '~/helpers/classes'
 import { cartFragment, displayableErrorFragment } from '~/helpers/fragments'
 import type { RootMatch } from '~/root'
 
@@ -136,14 +138,38 @@ export default function Cart() {
     <Suspense fallback={<LoadingScreen />}>
       <Await resolve={root.data.cart}>
         {(cart) => (
-          <div className="container mx-auto px-6">
-            <h1 className="text-h2 mb-6">Cart</h1>
+          <div className="container mx-auto px-6 mb-20">
+            <h1 className="text-h2 mb-12">Cart</h1>
 
-            <div className="md:grid md:grid-cols-2">
+            <div className="flex flex-col md:grid md:grid-cols-[2fr_1fr] gap-20">
               <div className="flex flex-col gap-8">
                 {cart.lines.nodes.map((line) =>
                   <LineItem key={line.id} item={line} />
                 )}
+              </div>
+
+              <div className="flex flex-col gap-4 max-w-sm ml-auto w-full">
+                <h2 className="text-h4 mb-4">Total</h2>
+
+                <div className="flex gap-4 justify-between">
+                  <p className="text-sm font-semibold">Subtotal</p>
+
+                  <p className="text-sm text-right">
+                    <Money data={cart.cost.subtotalAmount} />
+                  </p>
+                </div>
+
+                <div className="flex gap-4 justify-between">
+                  <p className="text-sm font-semibold">Total</p>
+
+                  <p className="text-sm text-right">
+                    <Money data={cart.cost.totalAmount} />
+                  </p>
+                </div>
+
+                <a className={`${buttonClasses} mt-8`} href={cart.checkoutUrl}>
+                  Go to checkout
+                </a>
               </div>
             </div>
           </div>

@@ -88,6 +88,17 @@ export const cartFragment = `
   fragment CartFragment on Cart {
     id
     totalQuantity
+    checkoutUrl
+    cost {
+      subtotalAmount {
+        amount
+        currencyCode
+      }
+      totalAmount {
+        amount
+        currencyCode
+      }
+    }
     lines(first: 100) {
       nodes {
         id
