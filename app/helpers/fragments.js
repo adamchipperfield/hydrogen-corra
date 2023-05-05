@@ -7,16 +7,16 @@ export const productCardFragment = `
     id
     title
     handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    compareAtPriceRange {
-      minVariantPrice {
-        amount
-        currencyCode
+    variants(first: 1) {
+      nodes {
+        price {
+          amount
+          currencyCode
+        }
+        compareAtPrice {
+          amount
+          currencyCode
+        }
       }
     }
     featuredImage {
@@ -44,6 +44,7 @@ export const productFragment = `
     }
     images(first: 100) {
       nodes {
+        id
         width
         height
         url

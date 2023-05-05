@@ -7,6 +7,7 @@ import { Image, Money } from '@shopify/hydrogen'
 import DetailsTab from '~/components/DetailsTab'
 import type { RootMatch } from '~/root'
 import { buttonClasses } from '~/helpers/classes'
+import ProductPrice from '~/components/ProductPrice'
 
 export async function loader({ params, context }: LoaderArgs) {
   const { product } = await context.storefront.query<{ product: Product }>(
@@ -66,7 +67,9 @@ export default function ProductPage() {
     <div className="container mx-auto px-6 flex flex-col items-start gap-6 md:grid md:grid-cols-[2fr_1fr]">
       <div>
         {product.images.nodes.map((image) => (
-          <Image data={image} />
+          <div key={image.id}>
+            <Image data={image} width={976} />
+          </div>
         ))}
       </div>
 
@@ -125,7 +128,10 @@ function ProductForm({ product }: { product: Product }) {
 
       {!product.isGiftCard && selectedVariant && (
         <div className="mb-4">
-          <Money data={selectedVariant.price} />
+          <ProductPrice
+            price={selectedVariant.price}
+            compareAtPrice={selectedVariant.compareAtPrice}
+          />
         </div>
       )}
 
@@ -139,7 +145,7 @@ function ProductForm({ product }: { product: Product }) {
 
       <div className="flex flex-col items-start gap-4">
         <div className={`flex flex-col gap-2 ${hasOnlyDefaultVariant ? 'hidden' : ''}`}>
-          <label htmlFor={`product-variant-${product.id}`}>
+          <label className="text-sm" htmlFor={`product-variant-${product.id}`}>
             Select variant
           </label>
 
@@ -159,14 +165,21 @@ function ProductForm({ product }: { product: Product }) {
           </select>
         </div>
 
-        <input
-          type="number"
-          name="quantity"
-          value={quantity}
-          onChange={({ target }) => {
-            setQuantity(Number(target.value))
-          }}
-        />
+        <div className="flex flex-col gap-2">
+          <label className="text-sm" htmlFor={`product-quantity-${product.id}`}>
+            Quantity
+          </label>
+
+          <input
+            id={`product-quantity-${product.id}`}
+            type="number"
+            name="quantity"
+            value={quantity}
+            onChange={({ target }) => {
+              setQuantity(Number(target.value))
+            }}
+          />
+        </div>
 
         <button
           className={buttonClasses}
