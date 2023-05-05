@@ -8,6 +8,7 @@ import DetailsTab from '~/components/DetailsTab'
 import type { RootMatch } from '~/root'
 import { buttonClasses } from '~/helpers/classes'
 import ProductPrice from '~/components/ProductPrice'
+import IconMisc from '~/components/IconMisc'
 
 export async function loader({ params, context }: LoaderArgs) {
   const { product } = await context.storefront.query<{ product: Product }>(
@@ -182,10 +183,12 @@ function ProductForm({ product }: { product: Product }) {
         </div>
 
         <button
-          className={buttonClasses}
-          disabled={loading}
+          className={`${buttonClasses} ${!product.availableForSale ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={!product.availableForSale || loading}
         >
-          Add to cart
+          {loading
+            ? <IconMisc className="animate-spin mx-auto" icon="loading" />
+            : product.availableForSale ? 'Add to cart' : 'Out of stock'}
         </button>
       </div>
     </fetcher.Form>

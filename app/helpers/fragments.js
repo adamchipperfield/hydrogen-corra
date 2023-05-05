@@ -38,6 +38,7 @@ export const productFragment = `
     vendor
     descriptionHtml
     isGiftCard
+    availableForSale
     options (first: 3) {
       name
       values
