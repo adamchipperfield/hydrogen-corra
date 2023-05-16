@@ -1,7 +1,7 @@
 import type { Collection as CollectionType, ProductConnection } from '@shopify/hydrogen/storefront-api-types'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import { productCardFragment } from '~/helpers/fragments'
-import Collection, { productsPerPage } from '~/routes/collections/$handle'
+import Collection, { productsPerPage } from '~/routes/($lang)/collections/$handle'
 
 export async function loader({ context, request }: LoaderArgs): Promise<{ collection: CollectionType }> {
   const { searchParams } = new URL(request.url)

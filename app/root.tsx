@@ -14,11 +14,11 @@ import Layout from '~/components/Layout'
 import { type LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
 import type { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
-import { createCart } from '~/routes/cart'
+import { createCart } from '~/routes/($lang)/cart'
 import { cartFragment } from '~/helpers/fragments'
 import type { ReactNode } from 'react'
 import { buttonClasses } from '~/helpers/classes'
-import type { CartResponse } from '~/routes/cart'
+import type { CartResponse } from '~/routes/($lang)/cart'
 
 export const links = () => [
   {
