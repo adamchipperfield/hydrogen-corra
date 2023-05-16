@@ -12,8 +12,63 @@ import {
 export default {
   async fetch(request, env, executionContext) {
     const waitUntil = (payload) => executionContext.waitUntil(payload)
+    const url = new URL(request.url)
+    const locales = []
 
     try {
+      const clientConfig = {
+        publicStorefrontToken: env.PUBLIC_STOREFRONT_API_TOKEN,
+        privateStorefrontToken: env.PRIVATE_STOREFRONT_API_TOKEN,
+        storeDomain: `https://${env.PUBLIC_STORE_DOMAIN}`,
+        storefrontApiVersion: env.PUBLIC_STOREFRONT_API_VERSION || '2023-04',
+        storefrontId: env.PUBLIC_STOREFRONT_ID,
+        storefrontHeaders: getStorefrontHeaders(request)
+      }
+
+      /**
+       * Sets the client `i18n` property based on the request path.
+       * - If the locale is invalid, no `i18n` is set.
+       */
+      const { localization } = await createStorefrontClient(clientConfig).storefront
+        .query(`#graphql
+          query {
+            localization {
+              availableCountries {
+                isoCode
+        
+                availableLanguages {
+                  isoCode
+                }
+              }
+            }
+          }
+        `)
+
+      localization.availableCountries.forEach((country) => {
+        country.availableLanguages.forEach((language) => {
+          const param = `${language.isoCode}-${country.isoCode}`.toLowerCase()
+          const reg = new RegExp('^\/' + param + '($|\/)')
+
+          /**
+           * Push to the app context.
+           */
+          locales.push({
+            param: `${language.isoCode}-${country.isoCode}`.toLowerCase(),
+            country: country.isoCode,
+            language: language.isoCode
+          })
+
+          /**
+           * Set the storefront client `i18n` configuration.
+           */
+          if (reg.test(url.pathname)) {
+            clientConfig.i18n = {
+              country: country.isoCode,
+              language: language.isoCode
+            }
+          }
+        })
+      })
 
       /**
        * Open a cache instance in the worker and a custom session instance.
@@ -33,16 +88,7 @@ export default {
       const { storefront } = createStorefrontClient({
         cache,
         waitUntil,
-        i18n: {
-          language: 'EN',
-          country: 'US'
-        },
-        publicStorefrontToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-        privateStorefrontToken: env.PRIVATE_STOREFRONT_API_TOKEN,
-        storeDomain: `https://${env.PUBLIC_STORE_DOMAIN}`,
-        storefrontApiVersion: env.PUBLIC_STOREFRONT_API_VERSION || '2023-04',
-        storefrontId: env.PUBLIC_STOREFRONT_ID,
-        storefrontHeaders: getStorefrontHeaders(request)
+        ...clientConfig
       })
 
       /**
@@ -52,7 +98,7 @@ export default {
       const handleRequest = createRequestHandler({
         build,
         mode: process.env.NODE_ENV,
-        getLoadContext: () => ({ session, storefront, env })
+        getLoadContext: () => ({ session, storefront, env, locales })
       })
 
       const response = await handleRequest(request);
