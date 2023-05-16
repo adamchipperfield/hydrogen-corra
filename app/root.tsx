@@ -1,5 +1,4 @@
 import {
-  Link,
   Links,
   Meta,
   Outlet,
@@ -19,6 +18,7 @@ import { cartFragment } from '~/helpers/fragments'
 import type { ReactNode } from 'react'
 import { buttonClasses } from '~/helpers/classes'
 import type { CartResponse } from '~/routes/($lang)/cart'
+import Link from '~/components/Link'
 
 export const links = () => [
   {

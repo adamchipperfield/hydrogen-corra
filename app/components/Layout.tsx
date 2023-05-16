@@ -1,7 +1,8 @@
-import { Await, Link, useMatches } from '@remix-run/react'
+import { Await, useMatches } from '@remix-run/react'
 import type { MenuItem } from '@shopify/hydrogen/storefront-api-types'
 import { type ReactNode, Suspense } from 'react'
 import Loader from '~/components/Loader'
+import Link from '~/components/Link'
 
 export default function Layout({
   children,
@@ -23,14 +24,14 @@ export default function Layout({
           </div>
 
           <div className="col-span-6 text-center">
-            <a className="font-bold" href="/">{title}</a>
+            <Link to="/" className="font-bold">{title}</Link>
           </div>
 
           <div className="hidden md:block grow ml-10">
             <ul className="flex gap-6">
               {links.map(({ title, url, id }) => (
                 <li key={id}>
-                  {url ? <a href={url}>{title}</a> : title}
+                  {url ? <Link to={url}>{title}</Link> : title}
                 </li>
               ))}
             </ul>

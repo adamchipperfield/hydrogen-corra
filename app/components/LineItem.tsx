@@ -1,6 +1,7 @@
-import { Link, useFetcher } from '@remix-run/react'
+import { useFetcher } from '@remix-run/react'
 import { Image, Money } from '@shopify/hydrogen'
 import type { CartLine } from '@shopify/hydrogen/storefront-api-types'
+import Link from '~/components/Link'
 
 export default function LineItem({ item }: { item: CartLine }) {
   const { Form } = useFetcher()

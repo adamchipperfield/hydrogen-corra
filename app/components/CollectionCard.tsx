@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react'
+import Link from '~/components/Link'
 import { Image } from '@shopify/hydrogen'
 import type { Collection } from '@shopify/hydrogen/storefront-api-types'
 import defaultTheme from 'tailwindcss/defaultTheme'
