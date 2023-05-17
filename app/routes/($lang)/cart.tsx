@@ -43,7 +43,7 @@ export async function action({ request, context }: ActionArgs) {
   /**
    * Saves the cart to the session and commits it to the headers.
    */
-  async function commitCart({ cart, userErrors }: CartResponse) {
+  async function commitCart({ cart, userErrors }: CartResponse, status = 200) {
     if (cart) {
       session.set('cart', cart.id)
       headers.set('Set-Cookie', await session.commit())
@@ -56,11 +56,16 @@ export async function action({ request, context }: ActionArgs) {
       },
       {
         headers,
-        status: 200
+        status
       }
     )
   }
 
+  /**
+   * Add to cart.
+   * @see https://shopify.dev/docs/api/storefront/2023-04/mutations/cartCreate
+   * @see https://shopify.dev/docs/api/storefront/2023-04/mutations/cartLinesAdd
+   */
   if (action === 'add_to_cart') {
     if (!form.has('merchandise')) {
       throw new Error(`\`merchandise\` is required`)
@@ -109,6 +114,10 @@ export async function action({ request, context }: ActionArgs) {
     }
   }
 
+  /**
+   * Remove from cart.
+   * @see https://shopify.dev/docs/api/storefront/2023-04/mutations/cartLinesRemove
+   */
   if (action === 'remove_from_cart') {
     if (!form.has('line')) {
       throw new Error(`\`line\` is required`)
@@ -125,6 +134,28 @@ export async function action({ request, context }: ActionArgs) {
     )
 
     return commitCart(cartLinesRemove)
+  }
+
+  /**
+   * Update buyer identity.
+   * @see https://shopify.dev/docs/api/storefront/2023-04/mutations/cartBuyerIdentityUpdate
+   */
+  if (action === 'update_buyer_identity') {
+    const { cartBuyerIdentityUpdate } = await context.storefront.mutate<{ cartBuyerIdentityUpdate: CartResponse }>(
+      CART_BUYER_IDENTITY_UPDATE_MUTATION,
+      {
+        variables: {
+          cartId: cart,
+          buyerIdentity: JSON.parse(form.get('buyer_identity') as string)
+        }
+      }
+    )
+
+    if (form.has('redirect_to')) {
+      headers.set('Location', form.get('redirect_to') as string)
+    }
+
+    return commitCart(cartBuyerIdentityUpdate, 303)
   }
 
   throw new Error(`Cart action \`${action}\` does not exist`)
@@ -216,6 +247,23 @@ const CART_LINES_ADD_MUTATION = `#graphql
 const CART_LINES_REMOVE_MUTATION = `#graphql
   mutation ($cartId: ID!, $lineIds: [ID!]!) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+      cart {
+        ...CartFragment
+      }
+
+      userErrors {
+        ...DisplayableErrorFragment
+      }
+    }
+  }
+
+  ${displayableErrorFragment}
+  ${cartFragment}
+`
+
+const CART_BUYER_IDENTITY_UPDATE_MUTATION = `#graphql
+  mutation ($buyerIdentity: CartBuyerIdentityInput!, $cartId: ID!) {
+    cartBuyerIdentityUpdate(buyerIdentity: $buyerIdentity, cartId: $cartId) {
       cart {
         ...CartFragment
       }

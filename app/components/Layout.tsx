@@ -3,6 +3,7 @@ import type { MenuItem } from '@shopify/hydrogen/storefront-api-types'
 import { type ReactNode, Suspense } from 'react'
 import Loader from '~/components/Loader'
 import Link from '~/components/Link'
+import LocaleSelector from '~/components/LocaleSelector'
 
 export default function Layout({
   children,
@@ -54,6 +55,14 @@ export default function Layout({
       <main>
         {children}
       </main>
+
+      <footer>
+        <div className="container flex mx-auto px-6 py-6 md:py-10">
+          <div className="md:ml-auto">
+            <LocaleSelector />
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

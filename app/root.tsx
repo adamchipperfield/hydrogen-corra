@@ -92,7 +92,9 @@ export async function loader({ context }: LoaderArgs) {
     shop,
     menu,
     cart,
-    domain: context.storefront.getShopifyDomain()
+    domain: context.storefront.getShopifyDomain(),
+    i18n: context.storefront.i18n,
+    locales: context.locales
   })
 }
 

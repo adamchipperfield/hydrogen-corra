@@ -89,6 +89,9 @@ export const cartFragment = `
     id
     totalQuantity
     checkoutUrl
+    buyerIdentity {
+      countryCode
+    }
     cost {
       subtotalAmount {
         amount

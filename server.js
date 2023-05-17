@@ -34,9 +34,16 @@ export default {
           query {
             localization {
               availableCountries {
+                name
                 isoCode
+
+                currency {
+                  isoCode
+                  symbol
+                }
         
                 availableLanguages {
+                  name
                   isoCode
                 }
               }
@@ -54,8 +61,8 @@ export default {
            */
           locales.push({
             param: `${language.isoCode}-${country.isoCode}`.toLowerCase(),
-            country: country.isoCode,
-            language: language.isoCode
+            country,
+            language
           })
 
           /**
