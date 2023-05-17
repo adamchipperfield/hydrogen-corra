@@ -4,6 +4,9 @@ import { buttonClasses } from '~/helpers/classes'
 import { loader } from '~/root'
 import IconMisc from '~/components/IconMisc'
 
+/**
+ * Removes the promise wrappers from the given type.
+ */
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T
 
 /**
