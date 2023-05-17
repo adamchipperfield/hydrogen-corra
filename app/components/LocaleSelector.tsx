@@ -14,10 +14,10 @@ type Awaited<T> = T extends PromiseLike<infer U> ? U : T
  */
 export default function LocaleSelector() {
   const { locales, i18n } = useRouteLoaderData('root') as Awaited<ReturnType<typeof loader>>['data']
-  const defaultLocale = locales.find((locale) =>
-    locale.country.isoCode === i18n.country && locale.language.isoCode === i18n.language
+  const [selectedLocale, setSelectedLocale] = useState(
+    locales.find(({ country, language }) =>
+      country.isoCode === i18n.country && language.isoCode === i18n.language)
   )
-  const [selectedLocale, setSelectedLocale] = useState(defaultLocale)
   const fetcher = useFetcher()
   const params = useParams()
   const location = useLocation()
