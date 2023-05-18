@@ -94,7 +94,8 @@ export async function loader({ context }: LoaderArgs) {
     cart,
     domain: context.storefront.getShopifyDomain(),
     i18n: context.storefront.i18n,
-    locales: context.locales
+    locales: context.locales,
+    availableCountries: context.availableCountries
   })
 }
 
@@ -220,3 +221,8 @@ const CART_QUERY = `#graphql
 
   ${cartFragment}
 `
+
+/**
+ * Typing for the loader data.
+ */
+export type LoaderData = Awaited<ReturnType<typeof loader>>['data']

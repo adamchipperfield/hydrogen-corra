@@ -19,5 +19,6 @@ declare module '@shopify/remix-oxygen' {
       country: Country
       language: Language
     }>
+    availableCountries: Country[]
   }
 }

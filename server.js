@@ -105,7 +105,13 @@ export default {
       const handleRequest = createRequestHandler({
         build,
         mode: process.env.NODE_ENV,
-        getLoadContext: () => ({ session, storefront, env, locales })
+        getLoadContext: () => ({
+          session,
+          storefront,
+          env,
+          locales,
+          availableCountries: localization.availableCountries
+        })
       })
 
       const response = await handleRequest(request);
