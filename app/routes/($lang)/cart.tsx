@@ -1,7 +1,7 @@
 import { Await, useMatches } from '@remix-run/react'
 import { Money } from '@shopify/hydrogen'
 import type { Cart, CartLineInput, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
-import { type ActionArgs, json } from '@shopify/remix-oxygen'
+import { type ActionArgs, json, redirect } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
@@ -39,11 +39,12 @@ export async function action({ request, context }: ActionArgs) {
   const action = form.get('action')
   const cart = session.get('cart')
   const headers = new Headers()
+  const defaultStatus = 200
 
   /**
    * Saves the cart to the session and commits it to the headers.
    */
-  async function commitCart({ cart, userErrors }: CartResponse, status = 200) {
+  async function commitCart({ cart, userErrors }: CartResponse, status = defaultStatus) {
     if (cart) {
       session.set('cart', cart.id)
       headers.set('Set-Cookie', await session.commit())
@@ -155,7 +156,10 @@ export async function action({ request, context }: ActionArgs) {
       headers.set('Location', form.get('redirect_to') as string)
     }
 
-    return commitCart(cartBuyerIdentityUpdate, 303)
+    return commitCart(
+      cartBuyerIdentityUpdate,
+      form.has('redirect_to') ? 303 : defaultStatus
+    )
   }
 
   throw new Error(`Cart action \`${action}\` does not exist`)
