@@ -181,7 +181,8 @@ export function CatchBoundary() {
 }
 
 const GLOBAL_QUERY = `#graphql
-  query {
+  query ($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
     shop {
       name
       primaryDomain {
@@ -210,7 +211,8 @@ const GLOBAL_QUERY = `#graphql
 `
 
 const CART_QUERY = `#graphql
-  query ($cartId: ID!) {
+  query ($cartId: ID!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
     cart(id: $cartId) {
       ...CartFragment
     }

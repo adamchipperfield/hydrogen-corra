@@ -196,7 +196,8 @@ function ProductForm({ product }: { product: Product }) {
 }
 
 const PRODUCT_QUERY = `#graphql
-  query ($handle: String!) {
+  query ($handle: String!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...ProductFragment
     }

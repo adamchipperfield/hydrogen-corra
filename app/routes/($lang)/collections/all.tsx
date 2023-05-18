@@ -44,7 +44,13 @@ export async function loader({ context, request }: LoaderArgs): Promise<{ collec
 export default Collection
 
 const ALL_PRODUCTS_QUERY = `#graphql
-  query ($after: String, $first: Int = 8) {
+  query (
+    $after: String
+    $first: Int = 8
+    $country: CountryCode
+    $language: LanguageCode
+  )
+    @inContext(country: $country, language: $language) {
     products(first: $first, after: $after) {
       nodes {
         ...ProductCardFragment

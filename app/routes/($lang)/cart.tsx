@@ -211,7 +211,12 @@ export default function Cart() {
 }
 
 const CART_CREATE_MUTATION = `#graphql
-  mutation ($input: CartInput!) {
+  mutation (
+    $input: CartInput!
+    $country: CountryCode
+    $language: LanguageCode
+  )
+    @inContext(country: $country, language: $language) {
     cartCreate(input: $input) {
       cart {
         ...CartFragment
@@ -228,7 +233,13 @@ const CART_CREATE_MUTATION = `#graphql
 `
 
 const CART_LINES_ADD_MUTATION = `#graphql
-  mutation ($cartId: ID!, $lines: [CartLineInput!]!) {
+  mutation (
+    $cartId: ID!
+    $lines: [CartLineInput!]!
+    $country: CountryCode
+    $language: LanguageCode
+  )
+    @inContext(country: $country, language: $language) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
         ...CartFragment
@@ -245,7 +256,13 @@ const CART_LINES_ADD_MUTATION = `#graphql
 `
 
 const CART_LINES_REMOVE_MUTATION = `#graphql
-  mutation ($cartId: ID!, $lineIds: [ID!]!) {
+  mutation (
+    $cartId: ID!
+    $lineIds: [ID!]!
+    $country: CountryCode
+    $language: LanguageCode
+  )
+    @inContext(country: $country, language: $language) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart {
         ...CartFragment
@@ -262,7 +279,13 @@ const CART_LINES_REMOVE_MUTATION = `#graphql
 `
 
 const CART_BUYER_IDENTITY_UPDATE_MUTATION = `#graphql
-  mutation ($buyerIdentity: CartBuyerIdentityInput!, $cartId: ID!) {
+  mutation (
+    $buyerIdentity: CartBuyerIdentityInput!
+    $cartId: ID!
+    $country: CountryCode
+    $language: LanguageCode
+  )
+    @inContext(country: $country, language: $language) {
     cartBuyerIdentityUpdate(buyerIdentity: $buyerIdentity, cartId: $cartId) {
       cart {
         ...CartFragment

@@ -29,7 +29,8 @@ export default function Collections() {
 }
 
 const COLLECTIONS_QUERY = `#graphql
-  query {
+  query ($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
     collections(first: 12) {
       nodes {
         id

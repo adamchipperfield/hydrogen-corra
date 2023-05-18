@@ -111,7 +111,14 @@ export default function Collection() {
 }
 
 const COLLECTION_QUERY = `#graphql
-  query ($handle: String!, $first: Int = 8, $after: String) {
+  query (
+    $handle: String!
+    $first: Int = 8
+    $after: String
+    $country: CountryCode
+    $language: LanguageCode
+  )
+    @inContext(country: $country, language: $language) {
     collection(handle: $handle) {
       title
       description
