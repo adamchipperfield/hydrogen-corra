@@ -1,7 +1,7 @@
 import { Await, useMatches } from '@remix-run/react'
 import { Money } from '@shopify/hydrogen'
 import type { Cart, CartLineInput, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
-import { type ActionArgs, json, redirect } from '@shopify/remix-oxygen'
+import { type ActionArgs, json } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
