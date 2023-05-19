@@ -108,6 +108,12 @@ function ProductForm({ product }: { product: Product }) {
   const hasOnlyDefaultVariant = product.options.length === 1 && product.options[0].values.length <= 1
 
   useEffect(() => {
+    setSelectedVariant(
+      getVariantById(product, merchandise)
+    )
+  }, [product])
+
+  useEffect(() => {
     if (merchandise === selectedVariant?.id) {
       return
     }

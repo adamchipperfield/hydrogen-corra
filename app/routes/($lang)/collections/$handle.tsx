@@ -42,6 +42,11 @@ export default function Collection() {
   const [pageInfo, setPageInfo] = useState(collection.products.pageInfo)
   const [products, setProducts] = useState(collection.products.nodes)
 
+  useEffect(() => {
+    setPageInfo(collection.products.pageInfo)
+    setProducts(collection.products.nodes)
+  }, [collection])
+
   /**
    * The fetcher handles client side queries, specifically for "load more".
    */
