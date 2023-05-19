@@ -41,7 +41,11 @@ export default function LocaleSelector() {
   const redirectPath = `/${locale && locale.param}${path}`
 
   return (
-    <fetcher.Form action="/cart" method="post">
+    <fetcher.Form
+      className="flex gap-4"
+      action="/cart"
+      method="post"
+    >
       <input type="hidden" name="action" value="update_buyer_identity" />
       <input type="hidden" name="redirect_to" value={redirectPath} />
       
