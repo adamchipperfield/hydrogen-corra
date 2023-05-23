@@ -8,6 +8,7 @@ import LoadingScreen from '~/components/LoadingScreen'
 import { buttonClasses } from '~/helpers/classes'
 import { cartFragment, displayableErrorFragment } from '~/helpers/fragments'
 import type { RootMatch } from '~/root'
+import type { HydrogenSession } from '@/server'
 
 export type CartResponse = {
   cart: Cart
@@ -41,35 +42,42 @@ export async function createCart({
   )
 }
 
+/**
+ * Saves the cart to the session and commits it to the headers.
+ */
+async function commitCart({
+  response: { cart, userErrors },
+  status = 200,
+  headers,
+  session
+}: {
+  response: CartResponse
+  status?: number
+  headers: Headers
+  session: HydrogenSession
+}) {
+  session.set('cart', cart.id)
+  headers.set('Set-Cookie', await session.commit())
+
+  return json(
+    {
+      cart,
+      errors: userErrors
+    },
+    {
+      headers,
+      status
+    }
+  )
+}
+
 export async function action({ request, context }: ActionArgs) {
   const { session } = context
   const form = await request.formData()
   const action = form.get('action')
-  const country = form.get('country') as CountryCode
+  const country = form.get('country') as CountryCode | undefined
   const cart = session.get('cart')
   const headers = new Headers()
-  const defaultStatus = 200
-
-  /**
-   * Saves the cart to the session and commits it to the headers.
-   */
-  async function commitCart({ cart, userErrors }: CartResponse, status = defaultStatus) {
-    if (cart) {
-      session.set('cart', cart.id)
-      headers.set('Set-Cookie', await session.commit())
-    }
-
-    return json(
-      {
-        cart,
-        errors: userErrors
-      },
-      {
-        headers,
-        status
-      }
-    )
-  }
 
   /**
    * Add to cart.
@@ -97,7 +105,11 @@ export async function action({ request, context }: ActionArgs) {
        * If no cart exists in the session, create one with the lines.
        */
       return await createCart({ context, lines, country })
-        .then(({ cartCreate }) => commitCart(cartCreate))
+        .then(({ cartCreate }) => commitCart({
+          response: cartCreate,
+          headers,
+          session
+        }))
     }
 
     try {
@@ -111,7 +123,11 @@ export async function action({ request, context }: ActionArgs) {
         }
       )
 
-      return await commitCart(cartLinesAdd)
+      return await commitCart({
+        response: cartLinesAdd,
+        headers,
+        session
+      })
     } catch (error) {
 
       /**
@@ -143,7 +159,11 @@ export async function action({ request, context }: ActionArgs) {
       }
     )
 
-    return commitCart(cartLinesRemove)
+    return commitCart({
+      response: cartLinesRemove,
+      headers,
+      session
+    })
   }
 
   /**
@@ -165,10 +185,12 @@ export async function action({ request, context }: ActionArgs) {
       headers.set('Location', form.get('redirect_to') as string)
     }
 
-    return commitCart(
-      cartBuyerIdentityUpdate,
-      form.has('redirect_to') ? 303 : defaultStatus
-    )
+    return commitCart({
+      response: cartBuyerIdentityUpdate,
+      status: form.has('redirect_to') ? 303 : undefined,
+      headers,
+      session
+    })
   }
 
   throw new Error(`Cart action \`${action}\` does not exist`)
