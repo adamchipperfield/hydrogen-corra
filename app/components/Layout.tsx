@@ -1,9 +1,10 @@
-import { Await, useMatches } from '@remix-run/react'
+import { Await, useRouteLoaderData } from '@remix-run/react'
 import type { MenuItem } from '@shopify/hydrogen/storefront-api-types'
 import { type ReactNode, Suspense } from 'react'
 import Loader from '~/components/Loader'
 import Link from '~/components/Link'
 import LocaleSelector from '~/components/LocaleSelector'
+import type { LoaderData } from '~/root'
 
 export default function Layout({
   children,
@@ -14,7 +15,7 @@ export default function Layout({
   title: string
   links: Array<MenuItem>
 }) {
-  const [root] = useMatches()
+  const { cart } = useRouteLoaderData('root') as LoaderData
 
   return (
     <div className="grid grid-cols-[100%] grid-rows-[auto_1fr_auto] min-h-screen">
@@ -40,7 +41,7 @@ export default function Layout({
 
           <div className="col-span-3 text-right">
             <Suspense fallback={<Loader height={19} width={64} />}>
-              <Await resolve={root.data.cart}>
+              <Await resolve={cart}>
                 {(cart) => (
                   <Link to="/cart">
                     Cart ({cart.totalQuantity})

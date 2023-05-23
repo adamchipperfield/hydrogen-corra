@@ -1,11 +1,11 @@
-import { useFetcher, useLoaderData, useMatches, useSearchParams } from '@remix-run/react'
+import { useFetcher, useLoaderData, useRouteLoaderData, useSearchParams } from '@remix-run/react'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
 import type { DisplayableError, Product } from '@shopify/hydrogen/storefront-api-types'
 import { productFragment } from '~/helpers/fragments'
 import { useEffect, useState } from 'react'
-import { Image, Money } from '@shopify/hydrogen'
+import { Image } from '@shopify/hydrogen'
 import DetailsTab from '~/components/DetailsTab'
-import type { RootMatch } from '~/root'
+import type { LoaderData } from '~/root'
 import { buttonClasses } from '~/helpers/classes'
 import ProductPrice from '~/components/ProductPrice'
 import IconMisc from '~/components/IconMisc'
@@ -60,9 +60,8 @@ function getVariantById(product: Product, variant?: String) {
 
 export default function ProductPage() {
   const { product } = useLoaderData<typeof loader>()
-  /* @ts-ignore */
-  const [root]: [RootMatch] = useMatches()
-  const policies = [root.data.shop.refundPolicy, root.data.shop.shippingPolicy]
+  const { shop } = useRouteLoaderData('root') as LoaderData
+  const policies = [shop.refundPolicy, shop.shippingPolicy]
 
   return (
     <div className="container mx-auto px-6 flex flex-col items-start gap-6 md:grid md:grid-cols-[2fr_1fr]">
@@ -106,8 +105,7 @@ function ProductForm({ product }: { product: Product }) {
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
   const errors = fetcher.data?.errors as DisplayableError[] ?? []
   const hasOnlyDefaultVariant = product.options.length === 1 && product.options[0].values.length <= 1
-  /* @ts-ignore */
-  const [root]: [RootMatch] = useMatches()
+  const { i18n } = useRouteLoaderData('root') as LoaderData
 
   useEffect(() => {
     setSelectedVariant(
@@ -128,7 +126,7 @@ function ProductForm({ product }: { product: Product }) {
   return (
     <fetcher.Form action="/cart" method="post">
       <input type="hidden" name="action" value="add_to_cart" readOnly />
-      <input type="hidden" name="country" value={root.data.i18n.country} readOnly />
+      <input type="hidden" name="country" value={i18n.country} readOnly />
 
       <h1 className="text-h2 mb-4">{product.title}</h1>
       

@@ -1,4 +1,4 @@
-import { Await, useMatches } from '@remix-run/react'
+import { Await, useRouteLoaderData } from '@remix-run/react'
 import { Money } from '@shopify/hydrogen'
 import type { Cart, CartLineInput, CountryCode, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
 import { type ActionArgs, json } from '@shopify/remix-oxygen'
@@ -7,7 +7,7 @@ import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
 import { buttonClasses } from '~/helpers/classes'
 import { cartFragment, displayableErrorFragment } from '~/helpers/fragments'
-import type { RootMatch } from '~/root'
+import type { LoaderData } from '~/root'
 import type { HydrogenSession } from '@/server'
 
 export type CartResponse = {
@@ -197,12 +197,11 @@ export async function action({ request, context }: ActionArgs) {
 }
 
 export default function Cart() {
-  /* @ts-ignore */
-  const [root]: [RootMatch] = useMatches()
+  const { cart } = useRouteLoaderData('root') as LoaderData
 
   return (
     <Suspense fallback={<LoadingScreen />}>
-      <Await resolve={root.data.cart}>
+      <Await resolve={cart}>
         {(cart) => (
           <div className="container mx-auto px-6 mb-20">
             <h1 className="text-h2 mb-12">Cart</h1>

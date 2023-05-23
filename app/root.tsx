@@ -2,17 +2,16 @@ import {
   Links,
   Meta,
   Outlet,
-  RouteMatch,
   Scripts,
   ScrollRestoration,
   useLoaderData,
-  useMatches
+  useRouteLoaderData
 } from '@remix-run/react'
 import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
 import { type LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
-import type { Cart, Country, CountryCode, Language, LanguageCode, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
+import type { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
 import { createCart } from '~/routes/($lang)/cart'
 import { cartFragment } from '~/helpers/fragments'
 import type { ReactNode } from 'react'
@@ -31,29 +30,6 @@ export const meta = () => ({
   charset: 'utf-8',
   viewport: 'width=device-width,initial-scale=1'
 })
-
-/**
- * Typing for the root route match.
- * @see https://remix.run/docs/en/main/hooks/use-matches
- */
-export interface RootMatch extends RouteMatch {
-  data: {
-    shop: Shop
-    menu: Menu
-    cart: Cart
-    domain: string
-    i18n: {
-      country: CountryCode
-      language: LanguageCode
-    }
-    locales: Array<{
-      param: string
-      country: Country
-      language: Language
-    }>
-    availableCountries: Country[]
-  }
-}
 
 export async function loader({ context }: LoaderArgs) {
   const { shop, menu } = await context.storefront.query<{
@@ -172,11 +148,8 @@ export default function App() {
  * The error layout.
  */
 export function CatchBoundary() {
-  /* @ts-ignore */
-  const [root]: [RootMatches] = useMatches()
-
   return (
-    <Wrapper {...root.data}>
+    <Wrapper {...useRouteLoaderData('root') as LoaderData}>
       <div className="container px-6 mx-auto">
         <div className="flex flex-col items-start gap-6 max-w-lg mt-16">
           <h1 className="text-h3">Page not found</h1>
