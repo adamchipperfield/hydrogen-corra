@@ -87,7 +87,7 @@ export async function loader({ context }: LoaderArgs) {
     domain: context.storefront.getShopifyDomain(),
     i18n: context.storefront.i18n,
     locales: context.locales,
-    availableCountries: context.availableCountries
+    localization: context.localization
   })
 }
 

@@ -6,7 +6,7 @@ import IconMisc from '~/components/IconMisc'
 
 export default function LocaleSelector() {
   const fetcher = useFetcher()
-  const { availableCountries, i18n, locales } = useRouteLoaderData('root') as LoaderData
+  const { localization: { availableCountries }, i18n, locales } = useRouteLoaderData('root') as LoaderData
   const params = useParams()
   const location = useLocation()
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'

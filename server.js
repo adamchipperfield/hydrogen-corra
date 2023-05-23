@@ -33,6 +33,12 @@ export default {
         .query(`#graphql
           query {
             localization {
+              country {
+                isoCode
+              }
+              language {
+                isoCode
+              }
               availableCountries {
                 name
                 isoCode
@@ -110,7 +116,7 @@ export default {
           storefront,
           env,
           locales,
-          availableCountries: localization.availableCountries
+          localization
         })
       })
 

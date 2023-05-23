@@ -7,7 +7,7 @@
  */
 import type { Storefront } from '@shopify/hydrogen'
 import type { HydrogenSession } from './server'
-import type { Country, Language } from '@shopify/hydrogen/storefront-api-types'
+import type { Country, Language, Localization } from '@shopify/hydrogen/storefront-api-types'
 
 declare module '@shopify/remix-oxygen' {
   export interface AppLoadContext {
@@ -19,6 +19,6 @@ declare module '@shopify/remix-oxygen' {
       country: Country
       language: Language
     }>
-    availableCountries: Country[]
+    localization: Localization
   }
 }
