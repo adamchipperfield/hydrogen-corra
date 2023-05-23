@@ -31,64 +31,6 @@ export const meta = () => ({
   viewport: 'width=device-width,initial-scale=1'
 })
 
-/**
- * Returns the cart and response headers.
- * - Fetches or creates the cart, then commits to the headers.
- * - Returned headers should be returned by a `loader`.
- */
-async function getCart(context: LoaderArgs['context']) {
-  const cartId = await context.session.get('cart')
-
-  const payload = {
-    session: context.session
-  }
-
-  if (!cartId) {
-    const { cartCreate } = await createCart({
-      context,
-      country: context.storefront.i18n.country
-    })
-
-    return await formatCommitCart(
-      await commitCart({
-        response: cartCreate,
-        ...payload
-      })
-    )
-  }
-
-  const cartQuery = await context.storefront.query<CartResponse>(
-    CART_QUERY,
-    {
-      variables: {
-        cartId
-      },
-      cache: context.storefront.CacheNone()
-    }
-  )
-
-  if (!cartQuery) {
-    const { cartCreate } = await createCart({
-      context,
-      country: context.storefront.i18n.country
-    })
-
-    return await formatCommitCart(
-      await commitCart({
-        response: cartCreate,
-        ...payload
-      })
-    )
-  }
-
-  return await formatCommitCart(
-    await commitCart({
-      response: cartQuery,
-      ...payload
-    })
-  )
-}
-
 export async function loader({ context }: LoaderArgs) {
   const { cart, headers } = await getCart(context)
   const { shop, menu } = await context.storefront.query<{
@@ -181,6 +123,63 @@ export function CatchBoundary() {
         </div>
       </div>
     </Wrapper>
+  )
+}
+
+/**
+ * Returns the cart and response headers.
+ * - Fetches or creates the cart, then commits to the session.
+ */
+async function getCart(context: LoaderArgs['context']) {
+  const cartId = await context.session.get('cart')
+
+  const payload = {
+    session: context.session
+  }
+
+  if (!cartId) {
+    const { cartCreate } = await createCart({
+      context,
+      country: context.storefront.i18n.country
+    })
+
+    return await formatCommitCart(
+      await commitCart({
+        response: cartCreate,
+        ...payload
+      })
+    )
+  }
+
+  const cartQuery = await context.storefront.query<CartResponse>(
+    CART_QUERY,
+    {
+      variables: {
+        cartId
+      },
+      cache: context.storefront.CacheNone()
+    }
+  )
+
+  if (!cartQuery) {
+    const { cartCreate } = await createCart({
+      context,
+      country: context.storefront.i18n.country
+    })
+
+    return await formatCommitCart(
+      await commitCart({
+        response: cartCreate,
+        ...payload
+      })
+    )
+  }
+
+  return await formatCommitCart(
+    await commitCart({
+      response: cartQuery,
+      ...payload
+    })
   )
 }
 
