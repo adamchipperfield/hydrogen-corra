@@ -1,13 +1,16 @@
-import { useFetcher } from '@remix-run/react'
+import { useFetcher, useMatches } from '@remix-run/react'
 import { Image, Money } from '@shopify/hydrogen'
 import type { CartLine } from '@shopify/hydrogen/storefront-api-types'
 import Link from '~/components/Link'
+import type { RootMatch } from '~/root'
 
 export default function LineItem({ item }: { item: CartLine }) {
   const { Form } = useFetcher()
   const isSale = item.cost.subtotalAmount.amount > item.cost.totalAmount.amount
   const variantParameter = item.merchandise.id.split('/').at(-1)
   const url = `/products/${item.merchandise.product.handle}?variant=${variantParameter}`
+  /* @ts-ignore */
+  const [root]: [RootMatch] = useMatches()
 
   return (
     <div className="grid grid-cols-[100px_auto] gap-4">
@@ -59,6 +62,7 @@ export default function LineItem({ item }: { item: CartLine }) {
         >
           <input type="hidden" name="action" value="remove_from_cart" readOnly />
           <input type="hidden" name="line" value={item.id} readOnly />
+          <input type="hidden" name="country" value={root.data.i18n.country} readOnly />
 
           <button className="text-sm">Remove</button>
         </Form>

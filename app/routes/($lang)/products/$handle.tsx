@@ -106,6 +106,8 @@ function ProductForm({ product }: { product: Product }) {
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
   const errors = fetcher.data?.errors as DisplayableError[] ?? []
   const hasOnlyDefaultVariant = product.options.length === 1 && product.options[0].values.length <= 1
+  /* @ts-ignore */
+  const [root]: [RootMatch] = useMatches()
 
   useEffect(() => {
     setSelectedVariant(
@@ -126,6 +128,7 @@ function ProductForm({ product }: { product: Product }) {
   return (
     <fetcher.Form action="/cart" method="post">
       <input type="hidden" name="action" value="add_to_cart" readOnly />
+      <input type="hidden" name="country" value={root.data.i18n.country} readOnly />
 
       <h1 className="text-h2 mb-4">{product.title}</h1>
       

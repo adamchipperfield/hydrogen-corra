@@ -12,7 +12,7 @@ import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
 import { type LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
-import type { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
+import type { Cart, Country, CountryCode, Language, LanguageCode, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
 import { createCart } from '~/routes/($lang)/cart'
 import { cartFragment } from '~/helpers/fragments'
 import type { ReactNode } from 'react'
@@ -42,6 +42,16 @@ export interface RootMatch extends RouteMatch {
     menu: Menu
     cart: Cart
     domain: string
+    i18n: {
+      country: CountryCode
+      language: LanguageCode
+    }
+    locales: Array<{
+      param: string
+      country: Country
+      language: Language
+    }>
+    availableCountries: Country[]
   }
 }
 
@@ -60,7 +70,10 @@ export async function loader({ context }: LoaderArgs) {
    */
   const cart = (async (): Promise<Cart> => {
     if (!cartId) {
-      const { cartCreate } = await createCart(context.storefront)
+      const { cartCreate } = await createCart({
+        context,
+        country: context.storefront.i18n.country
+      })
 
       if (cartCreate) {
         return cartCreate.cart
@@ -78,7 +91,10 @@ export async function loader({ context }: LoaderArgs) {
     )
 
     if (!cart) {
-      const { cartCreate } = await createCart(context.storefront)
+      const { cartCreate } = await createCart({
+        context,
+        country: context.storefront.i18n.country
+      })
 
       if (cartCreate) {
         return cartCreate.cart

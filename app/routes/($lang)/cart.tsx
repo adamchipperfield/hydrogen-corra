@@ -1,6 +1,6 @@
 import { Await, useMatches } from '@remix-run/react'
 import { Money } from '@shopify/hydrogen'
-import type { Cart, CartLineInput, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
+import type { Cart, CartLineInput, CountryCode, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
 import { type ActionArgs, json } from '@shopify/remix-oxygen'
 import { Suspense } from 'react'
 import LineItem from '~/components/LineItem'
@@ -17,16 +17,24 @@ export type CartResponse = {
 /**
  * Creates a new cart.
  */
-export async function createCart(
-  storefront: ActionArgs['context']['storefront'],
-  lines: CartLineInput[] = []
-): Promise<{ cartCreate: CartResponse }> {
+export async function createCart({
+  context: { storefront },
+  lines = [],
+  country
+}: {
+  context: ActionArgs['context']
+  lines?: CartLineInput[]
+  country?: CountryCode
+}): Promise<{ cartCreate: CartResponse }> {
   return await storefront.mutate<{ cartCreate: CartResponse }>(
     CART_CREATE_MUTATION,
     {
       variables: {
         input: {
-          lines
+          lines,
+          buyerIdentity: {
+            countryCode: country
+          }
         }
       }
     }
@@ -37,6 +45,7 @@ export async function action({ request, context }: ActionArgs) {
   const { session } = context
   const form = await request.formData()
   const action = form.get('action')
+  const country = form.get('country') as CountryCode
   const cart = session.get('cart')
   const headers = new Headers()
   const defaultStatus = 200
@@ -87,7 +96,7 @@ export async function action({ request, context }: ActionArgs) {
       /**
        * If no cart exists in the session, create one with the lines.
        */
-      return await createCart(context.storefront, lines)
+      return await createCart({ context, lines, country })
         .then(({ cartCreate }) => commitCart(cartCreate))
     }
 
