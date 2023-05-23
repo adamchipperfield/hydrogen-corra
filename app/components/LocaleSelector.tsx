@@ -3,10 +3,11 @@ import { useState } from 'react'
 import { buttonClasses } from '~/helpers/classes'
 import type { LoaderData } from '~/root'
 import IconMisc from '~/components/IconMisc'
+import { getLocales } from '~/helpers/i18n'
 
 export default function LocaleSelector() {
   const fetcher = useFetcher()
-  const { localization, i18n, locales } = useRouteLoaderData('root') as LoaderData
+  const { localization, i18n } = useRouteLoaderData('root') as LoaderData
   const params = useParams()
   const location = useLocation()
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
@@ -29,7 +30,7 @@ export default function LocaleSelector() {
    * The selected locale.
    * - Finds a locale with the selected country and language.
    */
-  const locale = locales.find((locale) =>
+  const locale = getLocales(localization.availableCountries).find((locale) =>
     locale.country.isoCode === (country && country.isoCode) &&
       locale.language.isoCode === (language && language.isoCode)
   )

@@ -45,30 +45,40 @@ export async function createCart({
 /**
  * Saves the cart to the session and commits it to the headers.
  */
-async function commitCart({
-  response: { cart, userErrors },
+export async function commitCart({
+  response,
   status = 200,
-  headers,
+  headers = new Headers(),
   session
 }: {
   response: CartResponse
   status?: number
-  headers: Headers
+  headers?: Headers
   session: HydrogenSession
 }) {
-  session.set('cart', cart.id)
+  session.set('cart', response.cart.id)
   headers.set('Set-Cookie', await session.commit())
 
   return json(
     {
-      cart,
-      errors: userErrors
+      cart: response.cart,
+      errors: response.userErrors
     },
     {
       headers,
       status
     }
   )
+}
+
+/**
+ * Formats the `commitCart` Promise response.
+ */
+export async function formatCommitCart(response: Awaited<ReturnType<typeof commitCart>>) {
+  return {
+    cart: (await response.json()).cart,
+    headers: response.headers
+  }
 }
 
 export async function action({ request, context }: ActionArgs) {

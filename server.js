@@ -5,6 +5,7 @@ import {
   getStorefrontHeaders,
   createCookieSessionStorage
 } from '@shopify/remix-oxygen'
+import { getLocales } from '~/helpers/i18n'
 
 /**
  * Export an Oxygen worker entry.
@@ -13,7 +14,6 @@ export default {
   async fetch(request, env, executionContext) {
     const waitUntil = (payload) => executionContext.waitUntil(payload)
     const url = new URL(request.url)
-    const locales = []
 
     try {
       const clientConfig = {
@@ -57,30 +57,15 @@ export default {
           }
         `)
 
-      localization.availableCountries.forEach((country) => {
-        country.availableLanguages.forEach((language) => {
-          const param = `${language.isoCode}-${country.isoCode}`.toLowerCase()
-          const reg = new RegExp('^\/' + param + '($|\/)')
+      getLocales(localization.availableCountries).forEach(({ param, country, language }) => {
+        const reg = new RegExp('^\/' + param + '($|\/)')
 
-          /**
-           * Push to the app context.
-           */
-          locales.push({
-            param: `${language.isoCode}-${country.isoCode}`.toLowerCase(),
-            country,
-            language
-          })
-
-          /**
-           * Set the storefront client `i18n` configuration.
-           */
-          if (reg.test(url.pathname)) {
-            clientConfig.i18n = {
-              country: country.isoCode,
-              language: language.isoCode
-            }
+        if (reg.test(url.pathname)) {
+          clientConfig.i18n = {
+            country: country.isoCode,
+            language: language.isoCode
           }
-        })
+        }
       })
 
       /**
@@ -115,7 +100,6 @@ export default {
           session,
           storefront,
           env,
-          locales,
           localization
         })
       })

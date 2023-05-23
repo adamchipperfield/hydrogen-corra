@@ -1,5 +1,6 @@
 import { Outlet } from '@remix-run/react'
 import type { LoaderArgs } from '@shopify/remix-oxygen'
+import { getLocales } from '~/helpers/i18n'
 
 export async function loader({ params, context }: LoaderArgs) {
 
@@ -8,7 +9,8 @@ export async function loader({ params, context }: LoaderArgs) {
    */
   if (
     params.lang &&
-    !context.locales.find(({ param }) => param === params.lang)
+    !getLocales(context.localization.availableCountries)
+      .find(({ param }) => param === params.lang)
   ) {
     throw new Response(
       'Page not found',

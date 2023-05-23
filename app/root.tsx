@@ -11,8 +11,8 @@ import styles from '~/styles/app.css'
 import Layout from '~/components/Layout'
 import { type LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
-import type { Cart, Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
-import { createCart } from '~/routes/($lang)/cart'
+import type { Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
+import { commitCart, createCart, formatCommitCart } from '~/routes/($lang)/cart'
 import { cartFragment } from '~/helpers/fragments'
 import type { ReactNode } from 'react'
 import { buttonClasses } from '~/helpers/classes'
@@ -31,64 +31,84 @@ export const meta = () => ({
   viewport: 'width=device-width,initial-scale=1'
 })
 
+/**
+ * Returns the cart and response headers.
+ * - Fetches or creates the cart, then commits to the headers.
+ * - Returned headers should be returned by a `loader`.
+ */
+async function getCart(context: LoaderArgs['context']) {
+  const cartId = await context.session.get('cart')
+
+  const payload = {
+    session: context.session
+  }
+
+  if (!cartId) {
+    const { cartCreate } = await createCart({
+      context,
+      country: context.storefront.i18n.country
+    })
+
+    return await formatCommitCart(
+      await commitCart({
+        response: cartCreate,
+        ...payload
+      })
+    )
+  }
+
+  const cartQuery = await context.storefront.query<CartResponse>(
+    CART_QUERY,
+    {
+      variables: {
+        cartId
+      },
+      cache: context.storefront.CacheNone()
+    }
+  )
+
+  if (!cartQuery) {
+    const { cartCreate } = await createCart({
+      context,
+      country: context.storefront.i18n.country
+    })
+
+    return await formatCommitCart(
+      await commitCart({
+        response: cartCreate,
+        ...payload
+      })
+    )
+  }
+
+  return await formatCommitCart(
+    await commitCart({
+      response: cartQuery,
+      ...payload
+    })
+  )
+}
+
 export async function loader({ context }: LoaderArgs) {
+  const { cart, headers } = await getCart(context)
   const { shop, menu } = await context.storefront.query<{
     shop: Shop
     menu: Menu
   }>(GLOBAL_QUERY)
-  const cartId = await context.session.get('cart')
 
-  /**
-   * Handles the cart query.
-   * - If no cart is saved, create a new one.
-   * - If a cart is saved, query and return it.
-   * - If the cart query fails, create a new one.
-   */
-  const cart = (async (): Promise<Cart> => {
-    if (!cartId) {
-      const { cartCreate } = await createCart({
-        context,
-        country: context.storefront.i18n.country
-      })
-
-      if (cartCreate) {
-        return cartCreate.cart
-      }
+  return defer(
+    {
+      shop,
+      menu,
+      cart,
+      domain: context.storefront.getShopifyDomain(),
+      i18n: context.storefront.i18n,
+      localization: context.localization
+    },
+    {
+      headers
     }
-
-    const { cart } = await context.storefront.query<CartResponse>(
-      CART_QUERY,
-      {
-        variables: {
-          cartId
-        },
-        cache: context.storefront.CacheNone()
-      }
-    )
-
-    if (!cart) {
-      const { cartCreate } = await createCart({
-        context,
-        country: context.storefront.i18n.country
-      })
-
-      if (cartCreate) {
-        return cartCreate.cart
-      }
-    }
-
-    return cart
-  })()
-
-  return defer({
-    shop,
-    menu,
-    cart,
-    domain: context.storefront.getShopifyDomain(),
-    i18n: context.storefront.i18n,
-    locales: context.locales,
-    localization: context.localization
-  })
+  )
 }
 
 /**
@@ -131,14 +151,8 @@ function Wrapper({
  * The root app layout.
  */
 export default function App() {
-  const { shop, menu, domain } = useLoaderData<typeof loader>()
-
   return (
-    <Wrapper
-      shop={shop}
-      menu={menu}
-      domain={domain}
-    >
+    <Wrapper {...useLoaderData<typeof loader>()}>
       <Outlet />
     </Wrapper>
   )
