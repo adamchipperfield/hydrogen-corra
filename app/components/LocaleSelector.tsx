@@ -6,7 +6,7 @@ import IconMisc from '~/components/IconMisc'
 
 export default function LocaleSelector() {
   const fetcher = useFetcher()
-  const { localization: { availableCountries }, i18n, locales } = useRouteLoaderData('root') as LoaderData
+  const { localization, i18n, locales } = useRouteLoaderData('root') as LoaderData
   const params = useParams()
   const location = useLocation()
   const loading = fetcher.state === 'loading' || fetcher.state === 'submitting'
@@ -15,7 +15,7 @@ export default function LocaleSelector() {
    * The selected country.
    */
   const [country, setCountry] = useState(
-    availableCountries.find(({ isoCode }) => isoCode === i18n.country)
+    localization.availableCountries.find(({ isoCode }) => isoCode === i18n.country)
   )
 
   /**
@@ -36,9 +36,17 @@ export default function LocaleSelector() {
 
   /**
    * Builds the redirect path.
+   * - Excludes the parameter if it's the default locale.
    */
   const path = params.lang ? location.pathname.replace(`/${params.lang}`, '') : location.pathname
-  const redirectPath = `/${locale && locale.param}${path}`
+  let redirectPath = `/${locale && locale.param}${path}`
+
+  if (
+    localization.country.isoCode === (country && country.isoCode) &&
+    localization.language.isoCode === (language && language.isoCode)
+  ) {
+    redirectPath = path
+  }
 
   return (
     <fetcher.Form
@@ -61,10 +69,10 @@ export default function LocaleSelector() {
         name="country"
         defaultValue={country && country.isoCode}
         onChange={({ target }) => setCountry(
-          availableCountries.find(({ isoCode }) => isoCode === target.value)
+          localization.availableCountries.find(({ isoCode }) => isoCode === target.value)
         )}
       >
-        {availableCountries.map(({ isoCode, name }) => (
+        {localization.availableCountries.map(({ isoCode, name }) => (
           <option key={isoCode} value={isoCode}>{name}</option>
         ))}
       </select>
