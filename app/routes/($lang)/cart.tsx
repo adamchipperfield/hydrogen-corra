@@ -1,14 +1,14 @@
-import { Await, useRouteLoaderData } from '@remix-run/react'
+import { Await, useFetcher, useRouteLoaderData } from '@remix-run/react'
 import { Money } from '@shopify/hydrogen'
-import type { Cart, CartLineInput, CountryCode, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
-import { type ActionArgs, json } from '@shopify/remix-oxygen'
-import { Suspense } from 'react'
+import type { Cart, CartBuyerIdentity, CartLineInput, CountryCode, DisplayableError } from '@shopify/hydrogen/storefront-api-types'
+import { type ActionArgs, json, redirect } from '@shopify/remix-oxygen'
+import { ButtonHTMLAttributes, Suspense } from 'react'
 import LineItem from '~/components/LineItem'
 import LoadingScreen from '~/components/LoadingScreen'
-import { buttonClasses } from '~/helpers/classes'
 import { cartFragment, displayableErrorFragment } from '~/helpers/fragments'
 import type { LoaderData } from '~/root'
 import type { HydrogenSession } from '@/server'
+import { buttonClasses } from '~/helpers/classes'
 
 export type CartResponse = {
   cart: Cart
@@ -79,6 +79,25 @@ export async function formatCommitCart(response: Awaited<ReturnType<typeof commi
     cart: (await response.json()).cart,
     headers: response.headers
   }
+}
+
+/**
+ * Updates the cart's buyer indentity.
+ */
+export async function updateCartBuyerIdentity(
+  context: ActionArgs['context'],
+  cartId: Cart['id'],
+  buyerIdentity: Partial<CartBuyerIdentity>
+) {
+  return context.storefront.mutate<{ cartBuyerIdentityUpdate: CartResponse }>(
+    CART_BUYER_IDENTITY_UPDATE_MUTATION,
+    {
+      variables: {
+        cartId,
+        buyerIdentity
+      }
+    }
+  )
 }
 
 export async function action({ request, context }: ActionArgs) {
@@ -181,14 +200,10 @@ export async function action({ request, context }: ActionArgs) {
    * @see https://shopify.dev/docs/api/storefront/2023-04/mutations/cartBuyerIdentityUpdate
    */
   if (action === 'update_buyer_identity') {
-    const { cartBuyerIdentityUpdate } = await context.storefront.mutate<{ cartBuyerIdentityUpdate: CartResponse }>(
-      CART_BUYER_IDENTITY_UPDATE_MUTATION,
-      {
-        variables: {
-          cartId: cart,
-          buyerIdentity: JSON.parse(form.get('buyer_identity') as string)
-        }
-      }
+    const { cartBuyerIdentityUpdate } = await updateCartBuyerIdentity(
+      context,
+      cart,
+      JSON.parse(form.get('buyer_identity') as string)
     )
 
     if (form.has('redirect_to')) {
@@ -201,6 +216,32 @@ export async function action({ request, context }: ActionArgs) {
       headers,
       session
     })
+  }
+
+  if (action === 'go_to_checkout') {
+    const cartQuery = await context.storefront.query<CartResponse>(
+      CART_QUERY,
+      {
+        variables: {
+          cartId: cart
+        },
+        cache: context.storefront.CacheNone()
+      }
+    )
+
+    if (cartQuery.cart.buyerIdentity.countryCode !== country) {
+      const { cartBuyerIdentityUpdate } = await updateCartBuyerIdentity(
+        context,
+        cart,
+        {
+          countryCode: country
+        }
+      )
+
+      return redirect(cartBuyerIdentityUpdate.cart.checkoutUrl)
+    }
+
+    return redirect(cartQuery.cart.checkoutUrl)
   }
 
   throw new Error(`Cart action \`${action}\` does not exist`)
@@ -242,15 +283,31 @@ export default function Cart() {
                   </p>
                 </div>
 
-                <a className={`${buttonClasses} mt-8`} href={cart.checkoutUrl}>
-                  Go to checkout
-                </a>
+                <CheckoutButton className={`${buttonClasses} mt-8`} />
               </div>
             </div>
           </div>
         )}
       </Await>
     </Suspense>
+  )
+}
+
+/**
+ * Redirects the customer to the checkout.
+ * - Used to keep the cart consistent with the active country.
+ */
+export function CheckoutButton(params: ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { i18n } = useRouteLoaderData('root') as LoaderData
+  const fetcher = useFetcher()
+
+  return (
+    <fetcher.Form action="/cart" method="post">
+      <input type="hidden" name="action" value="go_to_checkout" readOnly />
+      <input type="hidden" name="country" value={i18n.country} readOnly />
+
+      <button {...params}>Go to checkout</button>
+    </fetcher.Form>
   )
 }
 
@@ -342,5 +399,16 @@ const CART_BUYER_IDENTITY_UPDATE_MUTATION = `#graphql
   }
 
   ${displayableErrorFragment}
+  ${cartFragment}
+`
+
+export const CART_QUERY = `#graphql
+  query ($cartId: ID!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    cart(id: $cartId) {
+      ...CartFragment
+    }
+  }
+
   ${cartFragment}
 `

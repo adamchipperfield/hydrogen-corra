@@ -12,7 +12,7 @@ import Layout from '~/components/Layout'
 import { type LoaderArgs, defer } from '@shopify/remix-oxygen'
 import { formatMenuItems } from '~/helpers/format'
 import type { Menu, Shop } from '@shopify/hydrogen/storefront-api-types'
-import { commitCart, createCart, formatCommitCart } from '~/routes/($lang)/cart'
+import { CART_QUERY, commitCart, createCart, formatCommitCart, updateCartBuyerIdentity } from '~/routes/($lang)/cart'
 import { cartFragment } from '~/helpers/fragments'
 import type { ReactNode } from 'react'
 import { buttonClasses } from '~/helpers/classes'
@@ -132,6 +132,7 @@ export function CatchBoundary() {
  */
 async function getCart(context: LoaderArgs['context']) {
   const cartId = await context.session.get('cart')
+  const { country } = context.storefront.i18n
 
   const payload = {
     session: context.session
@@ -140,7 +141,7 @@ async function getCart(context: LoaderArgs['context']) {
   if (!cartId) {
     const { cartCreate } = await createCart({
       context,
-      country: context.storefront.i18n.country
+      country
     })
 
     return await formatCommitCart(
@@ -164,7 +165,7 @@ async function getCart(context: LoaderArgs['context']) {
   if (!cartQuery) {
     const { cartCreate } = await createCart({
       context,
-      country: context.storefront.i18n.country
+      country
     })
 
     return await formatCommitCart(
@@ -173,6 +174,28 @@ async function getCart(context: LoaderArgs['context']) {
         ...payload
       })
     )
+  }
+
+  /**
+   * Used to keep the cart consistent with the active country.
+   */
+  if (cartQuery.cart.buyerIdentity.countryCode !== context.storefront.i18n.country) {
+    const { cartBuyerIdentityUpdate } = await updateCartBuyerIdentity(
+      context,
+      cartQuery.cart.id,
+      {
+        countryCode: country
+      }
+    )
+
+    if (cartBuyerIdentityUpdate) {
+      return await formatCommitCart(
+        await commitCart({
+          response: cartBuyerIdentityUpdate,
+          ...payload
+        })
+      )
+    }
   }
 
   return await formatCommitCart(
@@ -211,17 +234,6 @@ const GLOBAL_QUERY = `#graphql
       }
     }
   }
-`
-
-const CART_QUERY = `#graphql
-  query ($cartId: ID!, $country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    cart(id: $cartId) {
-      ...CartFragment
-    }
-  }
-
-  ${cartFragment}
 `
 
 /**
