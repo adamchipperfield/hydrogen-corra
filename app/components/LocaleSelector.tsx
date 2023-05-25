@@ -52,19 +52,11 @@ export default function LocaleSelector() {
   return (
     <fetcher.Form
       className="flex gap-4"
-      action="/cart"
+      action="/"
       method="post"
     >
-      <input type="hidden" name="action" value="update_buyer_identity" />
+      <input type="hidden" name="action" value="redirect" />
       <input type="hidden" name="redirect_to" value={redirectPath} />
-      
-      {country && (
-        <input
-          type="hidden"
-          name="buyer_identity"
-          value={JSON.stringify({ countryCode: country.isoCode })}
-        />
-      )}
 
       <select
         name="country"

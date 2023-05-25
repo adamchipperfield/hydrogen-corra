@@ -196,28 +196,9 @@ export async function action({ request, context }: ActionArgs) {
   }
 
   /**
-   * Update buyer identity.
-   * @see https://shopify.dev/docs/api/storefront/2023-04/mutations/cartBuyerIdentityUpdate
+   * Redirects to the checkout.
+   * - Ensures the cart is consistent with the provided country.
    */
-  if (action === 'update_buyer_identity') {
-    const { cartBuyerIdentityUpdate } = await updateCartBuyerIdentity(
-      context,
-      cart,
-      JSON.parse(form.get('buyer_identity') as string)
-    )
-
-    if (form.has('redirect_to')) {
-      headers.set('Location', form.get('redirect_to') as string)
-    }
-
-    return commitCart({
-      response: cartBuyerIdentityUpdate,
-      status: form.has('redirect_to') ? 303 : undefined,
-      headers,
-      session
-    })
-  }
-
   if (action === 'go_to_checkout') {
     const cartQuery = await context.storefront.query<CartResponse>(
       CART_QUERY,
