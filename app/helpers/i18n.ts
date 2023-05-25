@@ -1,4 +1,4 @@
-import type { Country, Language, Localization } from '@shopify/hydrogen/storefront-api-types'
+import type { Country, CountryCode, Language, LanguageCode, Localization } from '@shopify/hydrogen/storefront-api-types'
 
 /**
  * Returns all possible locale codes.
@@ -12,11 +12,10 @@ export function getLocales(countries: Localization['availableCountries']) {
  
   countries.forEach((country) => {
     country.availableLanguages.forEach((language) => {
-      const param = `${language.isoCode}-${country.isoCode}`.toLowerCase()
-      const reg = new RegExp('^\/' + param + '($|\/)')
+      const param = getLocaleParam(language.isoCode, country.isoCode)
 
       locales.push({
-        param: `${language.isoCode}-${country.isoCode}`.toLowerCase(),
+        param,
         country,
         language
       })
@@ -24,4 +23,11 @@ export function getLocales(countries: Localization['availableCountries']) {
   })
 
   return locales
+}
+
+/**
+ * Maps the country and language into a locale parameter.
+ */
+export function getLocaleParam(language: LanguageCode, country: CountryCode) {
+  return `${language}-${country}`.toLowerCase()
 }
