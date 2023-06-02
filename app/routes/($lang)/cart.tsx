@@ -9,6 +9,7 @@ import { cartFragment, displayableErrorFragment } from '~/helpers/fragments'
 import type { LoaderData } from '~/root'
 import type { HydrogenSession } from '@/server'
 import { buttonClasses } from '~/helpers/classes'
+import { usei18n } from '~/helpers/i18n'
 
 export type CartResponse = {
   cart: Cart
@@ -230,13 +231,14 @@ export async function action({ request, context }: ActionArgs) {
 
 export default function Cart() {
   const { cart } = useRouteLoaderData('root') as LoaderData
+  const { t } = usei18n()
 
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Await resolve={cart}>
         {(cart) => (
           <div className="container mx-auto px-6 mb-20">
-            <h1 className="text-h2 mb-12">Cart</h1>
+            <h1 className="text-h2 mb-12">{t('cart.title')}</h1>
 
             <div className="flex flex-col md:grid md:grid-cols-[2fr_1fr] gap-20">
               <div className="flex flex-col gap-8">
@@ -246,10 +248,10 @@ export default function Cart() {
               </div>
 
               <div className="flex flex-col gap-4 max-w-sm ml-auto w-full">
-                <h2 className="text-h4 mb-4">Total</h2>
+                <h2 className="text-h4 mb-4">{t('cart.total')}</h2>
 
                 <div className="flex gap-4 justify-between">
-                  <p className="text-sm font-semibold">Subtotal</p>
+                  <p className="text-sm font-semibold">{t('cart.subtotal')}</p>
 
                   <p className="text-sm text-right">
                     <Money data={cart.cost.subtotalAmount} />
@@ -257,7 +259,7 @@ export default function Cart() {
                 </div>
 
                 <div className="flex gap-4 justify-between">
-                  <p className="text-sm font-semibold">Total</p>
+                  <p className="text-sm font-semibold">{t('cart.total')}</p>
 
                   <p className="text-sm text-right">
                     <Money data={cart.cost.totalAmount} />
@@ -281,13 +283,14 @@ export default function Cart() {
 export function CheckoutButton(params: ButtonHTMLAttributes<HTMLButtonElement>) {
   const { i18n } = useRouteLoaderData('root') as LoaderData
   const fetcher = useFetcher()
+  const { t } = usei18n()
 
   return (
     <fetcher.Form action="/cart" method="post">
       <input type="hidden" name="action" value="go_to_checkout" readOnly />
       <input type="hidden" name="country" value={i18n.country} readOnly />
 
-      <button {...params}>Go to checkout</button>
+      <button {...params}>{t('cart.checkout')}</button>
     </fetcher.Form>
   )
 }
