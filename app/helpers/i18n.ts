@@ -77,6 +77,10 @@ export function usei18n(language?: string) {
   } as any
 
   return {
+
+    /**
+     * Returns the translation for the given path.
+     */
     t: (path: string, values?: { [key: string]: string | number }) => {
       const fallback = getProperty(path, translations['en'])
 
